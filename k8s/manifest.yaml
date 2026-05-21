@@ -478,6 +478,31 @@ spec:
     spec:
       enableServiceLinks: false
       nodeSelector: { topology: lan, kubernetes.io/arch: amd64 }
+      initContainers:
+        - name: synapse-namespace-init
+          image: alpine/curl:latest
+          command:
+            - sh
+            - -c
+            - |
+              API=http://labels-synapse-api.skirmshop.svc.cluster.local:8080
+              TOKEN=$(awk 'NR==1{gsub(/:/,""); print}' /tokens/tokens.yaml)
+              NS=skirmshop
+              until curl -sf "$API/healthz" > /dev/null 2>&1; do
+                echo "Waiting for Synapse API..."; sleep 3
+              done
+              CODE=$(curl -sf -o /dev/null -w "%{http_code}" \
+                -H "Authorization: Bearer $TOKEN" "$API/api/v1/namespaces/$NS")
+              if [ "$CODE" = "200" ]; then
+                echo "Synapse namespace $NS already exists"
+              else
+                curl -sf -X POST -H "Authorization: Bearer $TOKEN" \
+                  -H "Content-Type: application/json" \
+                  -d "{\"apiVersion\":\"neuroglia.io/v1\",\"kind\":\"Namespace\",\"metadata\":{\"name\":\"$NS\"}}" \
+                  "$API/api/v1/namespaces" && echo "Synapse namespace $NS created"
+              fi
+          volumeMounts:
+            - { name: tokens, mountPath: /tokens }
       containers:
         - name: synapse-correlator
           image: ghcr.io/serverlessworkflow/synapse/correlator:1.0.0-alpha1
@@ -490,6 +515,9 @@ spec:
           resources:
             requests: { cpu: 30m, memory: 64Mi }
             limits:   { memory: 256Mi }
+      volumes:
+        - name: tokens
+          configMap: { name: synapse-tokens }
 ---
 ---
 apiVersion: v1
@@ -513,6 +541,31 @@ spec:
     spec:
       enableServiceLinks: false
       nodeSelector: { topology: lan, kubernetes.io/arch: amd64 }
+      initContainers:
+        - name: synapse-namespace-init
+          image: alpine/curl:latest
+          command:
+            - sh
+            - -c
+            - |
+              API=http://labels-synapse-api.skirmshop.svc.cluster.local:8080
+              TOKEN=$(awk 'NR==1{gsub(/:/,""); print}' /tokens/tokens.yaml)
+              NS=skirmshop
+              until curl -sf "$API/healthz" > /dev/null 2>&1; do
+                echo "Waiting for Synapse API..."; sleep 3
+              done
+              CODE=$(curl -sf -o /dev/null -w "%{http_code}" \
+                -H "Authorization: Bearer $TOKEN" "$API/api/v1/namespaces/$NS")
+              if [ "$CODE" = "200" ]; then
+                echo "Synapse namespace $NS already exists"
+              else
+                curl -sf -X POST -H "Authorization: Bearer $TOKEN" \
+                  -H "Content-Type: application/json" \
+                  -d "{\"apiVersion\":\"neuroglia.io/v1\",\"kind\":\"Namespace\",\"metadata\":{\"name\":\"$NS\"}}" \
+                  "$API/api/v1/namespaces" && echo "Synapse namespace $NS created"
+              fi
+          volumeMounts:
+            - { name: tokens, mountPath: /tokens }
       containers:
         - name: synapse-operator
           image: ghcr.io/serverlessworkflow/synapse/operator:1.0.0-alpha1
@@ -527,6 +580,9 @@ spec:
           resources:
             requests: { cpu: 30m, memory: 64Mi }
             limits:   { memory: 256Mi }
+      volumes:
+        - name: tokens
+          configMap: { name: synapse-tokens }
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SKIRMSHOP-PICKER
