@@ -1,0 +1,533 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: skirmshop
+  labels:
+    cnpg-backup: "true"   # triggers ClusterExternalSecret minio-backup-creds
+---
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: labels-postgres-data
+  namespace: skirmshop
+spec:
+  accessModes: [ReadWriteOnce]
+  resources: { requests: { storage: 10Gi } }
+  storageClassName: longhorn
+---
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: labels-postgres
+  namespace: skirmshop
+spec:
+  serviceName: labels-postgres
+  replicas: 1
+  selector: { matchLabels: { app: labels-postgres } }
+  template:
+    metadata: { labels: { app: labels-postgres } }
+    spec:
+      enableServiceLinks: false
+      nodeSelector:
+        topology: lan
+        kubernetes.io/arch: amd64
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - { name: postgres, containerPort: 5432 }
+          env:
+            - { name: POSTGRES_DB, value: labels }
+            - { name: PGDATA, value: /var/lib/postgresql/data/pgdata }
+            - name: POSTGRES_USER
+              valueFrom: { secretKeyRef: { name: labels-secrets, key: LABELS_DB_USER } }
+            - name: POSTGRES_PASSWORD
+              valueFrom: { secretKeyRef: { name: labels-secrets, key: LABELS_DB_PASSWORD } }
+          volumeMounts:
+            - { name: data, mountPath: /var/lib/postgresql/data }
+          resources:
+            requests: { cpu: 100m, memory: 128Mi }
+            limits:   { memory: 512Mi }
+          readinessProbe:
+            exec: { command: [pg_isready, -U, skirmshop, -d, labels] }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim: { claimName: labels-postgres-data }
+---
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: labels-postgres
+  namespace: skirmshop
+spec:
+  selector: { app: labels-postgres }
+  ports:
+    - { name: postgres, port: 5432, targetPort: 5432 }
+---
+---
+# Labels Redis
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: labels-redis
+  namespace: skirmshop
+spec:
+  replicas: 1
+  strategy: { type: Recreate }
+  selector: { matchLabels: { app: labels-redis } }
+  template:
+    metadata: { labels: { app: labels-redis } }
+    spec:
+      enableServiceLinks: false
+      nodeSelector:
+        topology: lan
+        kubernetes.io/arch: amd64
+      containers:
+        - name: redis
+          image: redis:8.0.0
+          command: [redis-server, --appendonly, "yes"]
+          ports:
+            - { name: redis, containerPort: 6379 }
+          resources:
+            requests: { cpu: 20m, memory: 32Mi }
+            limits:   { memory: 256Mi }
+          readinessProbe:
+            exec: { command: [redis-cli, ping] }
+---
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: labels-redis
+  namespace: skirmshop
+spec:
+  selector: { app: labels-redis }
+  ports:
+    - { name: redis, port: 6379, targetPort: 6379 }
+---
+---
+# Labels NATS
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: labels-nats
+  namespace: skirmshop
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: labels-nats } }
+  template:
+    metadata: { labels: { app: labels-nats } }
+    spec:
+      enableServiceLinks: false
+      nodeSelector:
+        topology: lan
+        kubernetes.io/arch: amd64
+      containers:
+        - name: nats
+          image: nats:2.10-alpine
+          args: ["-js", "-sd", "/data", "-m", "8222"]
+          ports:
+            - { name: client, containerPort: 4222 }
+            - { name: monitor, containerPort: 8222 }
+            - { name: cluster, containerPort: 6222 }
+          volumeMounts:
+            - { name: data, mountPath: /data }
+          resources:
+            requests: { cpu: 20m, memory: 32Mi }
+            limits:   { memory: 256Mi }
+          readinessProbe:
+            httpGet: { path: /healthz, port: 8222 }
+            initialDelaySeconds: 3
+      volumes:
+        - name: data
+          emptyDir: {}   # JetStream persistence; use PVC for production
+---
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: labels-nats
+  namespace: skirmshop
+spec:
+  selector: { app: labels-nats }
+  ports:
+    - { name: client, port: 4222, targetPort: 4222 }
+    - { name: monitor, port: 8222, targetPort: 8222 }
+
+# ExternalSecret — labels app secrets
+---
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: labels-secrets
+  namespace: skirmshop
+spec:
+  refreshInterval: 1h
+  secretStoreRef: { name: vault-backend, kind: ClusterSecretStore }
+  target:
+    name: labels-secrets
+    creationPolicy: Owner
+  dataFrom:
+    - extract: { key: secret/skirmshop/labels }
+
+# ── labels microservices (stateless) ─────────────────────────────────────────
+# All use harbor.e-dani.com/homelab/skirmshop-labels-<name>:latest
+# Build from local images before deploying (Phase 8 CI step).
+---
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: labels-shopify-app
+  namespace: skirmshop
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: labels-shopify-app } }
+  template:
+    metadata: { labels: { app: labels-shopify-app } }
+    spec:
+      enableServiceLinks: false
+      nodeSelector: { topology: lan, kubernetes.io/arch: amd64 }
+      containers:
+        - name: shopify-app
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app:latest
+          ports: [{ name: http, containerPort: 3000 }]
+          env:
+            - { name: PORT, value: "3000" }
+            - { name: DATABASE_URL, value: "postgresql://$(LABELS_DB_USER):$(LABELS_DB_PASSWORD)@labels-postgres.skirmshop.svc.cluster.local:5432/labels" }
+            - { name: REDIS_URL, value: "redis://labels-redis.skirmshop.svc.cluster.local:6379" }
+            - { name: RABBITMQ_URL, value: "amqp://$(RABBITMQ_USER):$(RABBITMQ_PASS)@shared-rabbitmq.skirmshop.svc.cluster.local:5672" }
+          envFrom: [{ secretRef: { name: labels-secrets } }]
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits:   { memory: 512Mi }
+          readinessProbe:
+            httpGet: { path: /health, port: 3000 }
+            initialDelaySeconds: 15
+---
+---
+apiVersion: v1
+kind: Service
+metadata: { name: labels-shopify-app, namespace: skirmshop }
+spec:
+  selector: { app: labels-shopify-app }
+  ports: [{ name: http, port: 3004, targetPort: 3000 }]
+---
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: labels-event-gateway
+  namespace: skirmshop
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: labels-event-gateway } }
+  template:
+    metadata: { labels: { app: labels-event-gateway } }
+    spec:
+      enableServiceLinks: false
+      nodeSelector: { topology: lan, kubernetes.io/arch: amd64 }
+      containers:
+        - name: event-gateway
+          image: harbor.e-dani.com/homelab/skirmshop-labels-event-gateway:latest
+          ports: [{ name: http, containerPort: 3000 }]
+          env:
+            - { name: PORT, value: "3000" }
+            - { name: RABBITMQ_URL, value: "amqp://$(RABBITMQ_USER):$(RABBITMQ_PASS)@shared-rabbitmq.skirmshop.svc.cluster.local:5672" }
+            - { name: NATS_URL, value: "nats://labels-nats.skirmshop.svc.cluster.local:4222" }
+          envFrom: [{ secretRef: { name: labels-secrets } }]
+          resources:
+            requests: { cpu: 30m, memory: 64Mi }
+            limits:   { memory: 256Mi }
+          readinessProbe:
+            httpGet: { path: /health, port: 3000 }
+            initialDelaySeconds: 10
+---
+---
+apiVersion: v1
+kind: Service
+metadata: { name: labels-event-gateway, namespace: skirmshop }
+spec:
+  selector: { app: labels-event-gateway }
+  ports: [{ name: http, port: 3006, targetPort: 3000 }]
+---
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: labels-label-storage
+  namespace: skirmshop
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: labels-label-storage } }
+  template:
+    metadata: { labels: { app: labels-label-storage } }
+    spec:
+      enableServiceLinks: false
+      nodeSelector: { topology: lan, kubernetes.io/arch: amd64 }
+      containers:
+        - name: label-storage
+          image: harbor.e-dani.com/homelab/skirmshop-labels-label-storage:latest
+          ports: [{ name: http, containerPort: 3000 }]
+          env:
+            - { name: PORT, value: "3000" }
+            - { name: DATABASE_URL, value: "postgresql://$(LABELS_DB_USER):$(LABELS_DB_PASSWORD)@labels-postgres.skirmshop.svc.cluster.local:5432/labels" }
+          envFrom: [{ secretRef: { name: labels-secrets } }]
+          resources:
+            requests: { cpu: 30m, memory: 64Mi }
+            limits:   { memory: 256Mi }
+          readinessProbe:
+            httpGet: { path: /health, port: 3000 }
+            initialDelaySeconds: 10
+---
+---
+apiVersion: v1
+kind: Service
+metadata: { name: labels-label-storage, namespace: skirmshop }
+spec:
+  selector: { app: labels-label-storage }
+  ports: [{ name: http, port: 3007, targetPort: 3000 }]
+---
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: labels-routing-service
+  namespace: skirmshop
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: labels-routing-service } }
+  template:
+    metadata: { labels: { app: labels-routing-service } }
+    spec:
+      enableServiceLinks: false
+      nodeSelector: { topology: lan, kubernetes.io/arch: amd64 }
+      containers:
+        - name: routing-service
+          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service:latest
+          ports: [{ name: http, containerPort: 3000 }]
+          env:
+            - { name: PORT, value: "3000" }
+          envFrom: [{ secretRef: { name: labels-secrets } }]
+          resources:
+            requests: { cpu: 30m, memory: 64Mi }
+            limits:   { memory: 256Mi }
+          readinessProbe:
+            httpGet: { path: /health, port: 3000 }
+            initialDelaySeconds: 10
+---
+---
+apiVersion: v1
+kind: Service
+metadata: { name: labels-routing-service, namespace: skirmshop }
+spec:
+  selector: { app: labels-routing-service }
+  ports: [{ name: http, port: 3001, targetPort: 3000 }]
+---
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: labels-saga-launcher
+  namespace: skirmshop
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: labels-saga-launcher } }
+  template:
+    metadata: { labels: { app: labels-saga-launcher } }
+    spec:
+      enableServiceLinks: false
+      nodeSelector: { topology: lan, kubernetes.io/arch: amd64 }
+      containers:
+        - name: saga-launcher
+          image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher:latest
+          ports: [{ name: http, containerPort: 3000 }]
+          env:
+            - { name: PORT, value: "3000" }
+            - { name: NATS_URL, value: "nats://labels-nats.skirmshop.svc.cluster.local:4222" }
+            - { name: SYNAPSE_API_URL, value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080" }
+          envFrom: [{ secretRef: { name: labels-secrets } }]
+          resources:
+            requests: { cpu: 30m, memory: 64Mi }
+            limits:   { memory: 256Mi }
+          readinessProbe:
+            httpGet: { path: /health, port: 3000 }
+            initialDelaySeconds: 10
+---
+---
+apiVersion: v1
+kind: Service
+metadata: { name: labels-saga-launcher, namespace: skirmshop }
+spec:
+  selector: { app: labels-saga-launcher }
+  ports: [{ name: http, port: 3012, targetPort: 3000 }]
+---
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: labels-ups-adapter
+  namespace: skirmshop
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: labels-ups-adapter } }
+  template:
+    metadata: { labels: { app: labels-ups-adapter } }
+    spec:
+      enableServiceLinks: false
+      nodeSelector: { topology: lan, kubernetes.io/arch: amd64 }
+      containers:
+        - name: ups-adapter
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter:latest
+          ports: [{ name: http, containerPort: 3000 }]
+          env:
+            - { name: PORT, value: "3000" }
+          envFrom: [{ secretRef: { name: labels-secrets } }]
+          resources:
+            requests: { cpu: 20m, memory: 64Mi }
+            limits:   { memory: 256Mi }
+          readinessProbe:
+            httpGet: { path: /health, port: 3000 }
+            initialDelaySeconds: 10
+---
+---
+apiVersion: v1
+kind: Service
+metadata: { name: labels-ups-adapter, namespace: skirmshop }
+spec:
+  selector: { app: labels-ups-adapter }
+  ports: [{ name: http, port: 3002, targetPort: 3000 }]
+
+# ── Synapse workflow engine ───────────────────────────────────────────────────
+---
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: synapse-tokens
+  namespace: skirmshop
+data:
+  tokens.yaml: |
+    h0v0fixhkg9z4bgtxele7892x9sjtw7o:
+      sub: 00000000-0000-0000-0000-000000000003
+      name: skirmshop-compose-service
+      role: admin
+---
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: labels-synapse-api
+  namespace: skirmshop
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: labels-synapse-api } }
+  template:
+    metadata: { labels: { app: labels-synapse-api } }
+    spec:
+      enableServiceLinks: false
+      nodeSelector: { topology: lan, kubernetes.io/arch: amd64 }
+      containers:
+        - name: synapse-api
+          image: ghcr.io/serverlessworkflow/synapse/api:1.0.0-alpha1
+          ports: [{ name: http, containerPort: 8080 }]
+          env:
+            - { name: SYNAPSE_API_AUTH_TOKEN_FILE, value: /app/tokens.yaml }
+            - { name: SYNAPSE_API_JWT_AUTHORITY, value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080" }
+            - { name: CONNECTIONSTRINGS__REDIS, value: "labels-redis.skirmshop.svc.cluster.local:6379" }
+            - { name: SYNAPSE_DASHBOARD_SERVE, value: "true" }
+          envFrom: [{ secretRef: { name: labels-secrets } }]
+          volumeMounts:
+            - { name: tokens, mountPath: /app/tokens.yaml, subPath: tokens.yaml }
+          resources:
+            requests: { cpu: 50m, memory: 128Mi }
+            limits:   { memory: 512Mi }
+          readinessProbe:
+            httpGet: { path: /healthz, port: 8080 }
+            initialDelaySeconds: 15
+      volumes:
+        - name: tokens
+          configMap: { name: synapse-tokens }
+---
+---
+apiVersion: v1
+kind: Service
+metadata: { name: labels-synapse-api, namespace: skirmshop }
+spec:
+  selector: { app: labels-synapse-api }
+  ports: [{ name: http, port: 8080, targetPort: 8080 }]
+---
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: labels-synapse-correlator
+  namespace: skirmshop
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: labels-synapse-correlator } }
+  template:
+    metadata: { labels: { app: labels-synapse-correlator } }
+    spec:
+      enableServiceLinks: false
+      nodeSelector: { topology: lan, kubernetes.io/arch: amd64 }
+      containers:
+        - name: synapse-correlator
+          image: ghcr.io/serverlessworkflow/synapse/correlator:1.0.0-alpha1
+          ports: [{ name: http, containerPort: 8080 }]
+          env:
+            - { name: SYNAPSE_CORRELATOR_NAMESPACE, value: skirmshop }
+            - { name: SYNAPSE_CORRELATOR_NAME, value: skirmshop-correlator }
+            - { name: CONNECTIONSTRINGS__REDIS, value: "labels-redis.skirmshop.svc.cluster.local:6379" }
+          envFrom: [{ secretRef: { name: labels-secrets } }]
+          resources:
+            requests: { cpu: 30m, memory: 64Mi }
+            limits:   { memory: 256Mi }
+---
+---
+apiVersion: v1
+kind: Service
+metadata: { name: labels-synapse-correlator, namespace: skirmshop }
+spec:
+  selector: { app: labels-synapse-correlator }
+  ports: [{ name: http, port: 8080, targetPort: 8080 }]
+---
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: labels-synapse-operator
+  namespace: skirmshop
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: labels-synapse-operator } }
+  template:
+    metadata: { labels: { app: labels-synapse-operator } }
+    spec:
+      enableServiceLinks: false
+      nodeSelector: { topology: lan, kubernetes.io/arch: amd64 }
+      containers:
+        - name: synapse-operator
+          image: ghcr.io/serverlessworkflow/synapse/operator:1.0.0-alpha1
+          env:
+            - { name: CONNECTIONSTRINGS__REDIS, value: "labels-redis.skirmshop.svc.cluster.local:6379" }
+            - { name: SYNAPSE_OPERATOR_NAME, value: skirmshop-operator }
+            - { name: SYNAPSE_OPERATOR_NAMESPACE, value: skirmshop }
+            - { name: SYNAPSE_RUNNER_API, value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080" }
+            - { name: SYNAPSE_RUNNER_CONTAINER_PLATFORM, value: kubernetes }
+            - { name: SYNAPSE_RUNNER_LIFECYCLE_EVENTS, value: "true" }
+          envFrom: [{ secretRef: { name: labels-secrets } }]
+          resources:
+            requests: { cpu: 30m, memory: 64Mi }
+            limits:   { memory: 256Mi }
+
+# ══════════════════════════════════════════════════════════════════════════════
+# SKIRMSHOP-PICKER
+# ══════════════════════════════════════════════════════════════════════════════
