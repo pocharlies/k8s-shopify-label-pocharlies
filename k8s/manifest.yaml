@@ -575,7 +575,67 @@ spec:
       volumes:
         - name: tokens
           configMap: { name: synapse-tokens }
-
-# ══════════════════════════════════════════════════════════════════════════════
-# SKIRMSHOP-PICKER
-# ══════════════════════════════════════════════════════════════════════════════
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: strip-labels
+  namespace: skirmshop
+spec:
+  stripPrefix:
+    prefixes:
+      - /labels
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: strip-labels-ups
+  namespace: skirmshop
+spec:
+  stripPrefix:
+    prefixes:
+      - /labels-ups
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: skirmshop-labels-public
+  namespace: skirmshop
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: skirmshop.e-dani.com
+    external-dns.alpha.kubernetes.io/target: "57.129.17.172"
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
+spec:
+  entryPoints: [websecure]
+  ingressClassName: traefik-edge
+  routes:
+    - match: Host(`skirmshop.e-dani.com`) && PathPrefix(`/labels`)
+      kind: Rule
+      middlewares:
+        - name: strip-labels
+      services:
+        - name: labels-shopify-app
+          port: 3004
+  tls: {}
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: skirmshop-labels-ups-public
+  namespace: skirmshop
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: skirmshop.e-dani.com
+    external-dns.alpha.kubernetes.io/target: "57.129.17.172"
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
+spec:
+  entryPoints: [websecure]
+  ingressClassName: traefik-edge
+  routes:
+    - match: Host(`skirmshop.e-dani.com`) && PathPrefix(`/labels-ups`)
+      kind: Rule
+      middlewares:
+        - name: strip-labels-ups
+      services:
+        - name: labels-ups-adapter
+          port: 3002
+  tls: {}
