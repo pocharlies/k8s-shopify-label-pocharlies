@@ -506,7 +506,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       initContainers:
         - name: synapse-namespace-init
-          image: alpine/curl:latest
+          image: curlimages/curl:8.13.0
           command:
             - sh
             - -c
@@ -572,7 +572,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       initContainers:
         - name: synapse-namespace-init
-          image: alpine/curl:latest
+          image: curlimages/curl:8.13.0
           command:
             - sh
             - -c
