@@ -621,6 +621,17 @@ spec:
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
+  name: redirect-labels-ups-root
+  namespace: skirmshop
+spec:
+  redirectRegex:
+    regex: ^https?://skirmshop\.e-dani\.com(:[0-9]+)?/labels-ups$
+    replacement: https://skirmshop.e-dani.com/labels-ups/
+    permanent: true
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
   name: strip-labels
   namespace: skirmshop
 spec:
@@ -674,6 +685,13 @@ spec:
   entryPoints: [websecure]
   ingressClassName: traefik-edge
   routes:
+    - match: Host(`skirmshop.e-dani.com`) && Path(`/labels-ups`)
+      kind: Rule
+      middlewares:
+        - name: redirect-labels-ups-root
+      services:
+        - name: labels-ups-adapter
+          port: 3002
     - match: Host(`skirmshop.e-dani.com`) && PathPrefix(`/labels-ups`)
       kind: Rule
       middlewares:
