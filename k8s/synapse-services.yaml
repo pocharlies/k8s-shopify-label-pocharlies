@@ -35,6 +35,7 @@ metadata:
   namespace: skirmshop
 spec:
   replicas: 1
+  strategy: { type: Recreate }
   selector: { matchLabels: { app: labels-shopify-fulfillment-service } }
   template:
     metadata: { labels: { app: labels-shopify-fulfillment-service } }
@@ -72,6 +73,7 @@ metadata:
   namespace: skirmshop
 spec:
   replicas: 1
+  strategy: { type: Recreate }
   selector: { matchLabels: { app: labels-correos-express-adapter } }
   template:
     metadata: { labels: { app: labels-correos-express-adapter } }
@@ -112,6 +114,7 @@ metadata:
   namespace: skirmshop
 spec:
   replicas: 1
+  strategy: { type: Recreate }
   selector: { matchLabels: { app: labels-correos-adapter } }
   template:
     metadata: { labels: { app: labels-correos-adapter } }
@@ -150,6 +153,7 @@ metadata:
   namespace: skirmshop
 spec:
   replicas: 1
+  strategy: { type: Recreate }
   selector: { matchLabels: { app: labels-notification-dispatcher } }
   template:
     metadata: { labels: { app: labels-notification-dispatcher } }
@@ -191,6 +195,7 @@ metadata:
   namespace: skirmshop
 spec:
   replicas: 1
+  strategy: { type: Recreate }
   selector: { matchLabels: { app: labels-event-projector } }
   template:
     metadata: { labels: { app: labels-event-projector } }
@@ -234,6 +239,7 @@ metadata:
   namespace: skirmshop
 spec:
   replicas: 1
+  strategy: { type: Recreate }
   selector: { matchLabels: { app: labels-tracking-ingestion } }
   template:
     metadata: { labels: { app: labels-tracking-ingestion } }
