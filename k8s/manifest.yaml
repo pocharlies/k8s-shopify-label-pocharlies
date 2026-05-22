@@ -335,6 +335,49 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: labels-outbox-relay
+  namespace: skirmshop
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: labels-outbox-relay } }
+  template:
+    metadata: { labels: { app: labels-outbox-relay } }
+    spec:
+      enableServiceLinks: false
+      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+      tolerations:
+        - { key: role, operator: Equal, value: edge, effect: NoSchedule }
+      containers:
+        - name: outbox-relay
+          image: harbor.e-dani.com/homelab/skirmshop-labels-outbox-relay:latest
+          ports: [{ name: http, containerPort: 3000 }]
+          env:
+            - { name: PORT, value: "3000" }
+            - { name: DATABASE_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
+            - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
+            - { name: POSTGRES_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
+            - { name: NATS_URL, value: "nats://labels-nats.skirmshop.svc.cluster.local:4222" }
+            - { name: RELAY_BATCH_SIZE, value: "10" }
+          envFrom: [{ secretRef: { name: labels-secrets } }]
+          resources:
+            requests: { cpu: 30m, memory: 64Mi }
+            limits:   { memory: 256Mi }
+          readinessProbe:
+            httpGet: { path: /ready, port: 3000 }
+            initialDelaySeconds: 10
+---
+---
+apiVersion: v1
+kind: Service
+metadata: { name: labels-outbox-relay, namespace: skirmshop }
+spec:
+  selector: { app: labels-outbox-relay }
+  ports: [{ name: http, port: 3010, targetPort: 3000 }]
+---
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
   name: labels-ups-adapter
   namespace: skirmshop
 spec:
