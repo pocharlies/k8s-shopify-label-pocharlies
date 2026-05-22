@@ -77,8 +77,10 @@ spec:
     spec:
       enableServiceLinks: false
       nodeSelector:
-        topology: lan
+        role: edge
         kubernetes.io/arch: amd64
+      tolerations:
+        - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: redis
           image: redis:8.0.0
@@ -117,8 +119,10 @@ spec:
     spec:
       enableServiceLinks: false
       nodeSelector:
-        topology: lan
+        role: edge
         kubernetes.io/arch: amd64
+      tolerations:
+        - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: nats
           image: nats:2.10-alpine
@@ -186,7 +190,9 @@ spec:
     metadata: { labels: { app: labels-shopify-app } }
     spec:
       enableServiceLinks: false
-      nodeSelector: { topology: lan, kubernetes.io/arch: amd64 }
+      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+      tolerations:
+        - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: shopify-app
           image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app:latest
@@ -225,7 +231,9 @@ spec:
     metadata: { labels: { app: labels-event-gateway } }
     spec:
       enableServiceLinks: false
-      nodeSelector: { topology: lan, kubernetes.io/arch: amd64 }
+      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+      tolerations:
+        - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: event-gateway
           image: harbor.e-dani.com/homelab/skirmshop-labels-event-gateway:latest
@@ -263,7 +271,9 @@ spec:
     metadata: { labels: { app: labels-label-storage } }
     spec:
       enableServiceLinks: false
-      nodeSelector: { topology: lan, kubernetes.io/arch: amd64 }
+      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+      tolerations:
+        - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: label-storage
           image: harbor.e-dani.com/homelab/skirmshop-labels-label-storage:latest
@@ -300,7 +310,9 @@ spec:
     metadata: { labels: { app: labels-routing-service } }
     spec:
       enableServiceLinks: false
-      nodeSelector: { topology: lan, kubernetes.io/arch: amd64 }
+      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+      tolerations:
+        - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: routing-service
           image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service:latest
@@ -336,7 +348,9 @@ spec:
     metadata: { labels: { app: labels-saga-launcher } }
     spec:
       enableServiceLinks: false
-      nodeSelector: { topology: lan, kubernetes.io/arch: amd64 }
+      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+      tolerations:
+        - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: saga-launcher
           image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher:latest
@@ -374,7 +388,9 @@ spec:
     metadata: { labels: { app: labels-ups-adapter } }
     spec:
       enableServiceLinks: false
-      nodeSelector: { topology: lan, kubernetes.io/arch: amd64 }
+      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+      tolerations:
+        - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: ups-adapter
           image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter:latest
@@ -425,7 +441,9 @@ spec:
     metadata: { labels: { app: labels-synapse-api } }
     spec:
       enableServiceLinks: false
-      nodeSelector: { topology: lan, kubernetes.io/arch: amd64 }
+      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+      tolerations:
+        - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: synapse-api
           image: ghcr.io/serverlessworkflow/synapse/api:1.0.0-alpha1
@@ -469,7 +487,9 @@ spec:
     metadata: { labels: { app: labels-synapse-correlator } }
     spec:
       enableServiceLinks: false
-      nodeSelector: { topology: lan, kubernetes.io/arch: amd64 }
+      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+      tolerations:
+        - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       initContainers:
         - name: synapse-namespace-init
           image: alpine/curl:latest
@@ -532,7 +552,9 @@ spec:
     metadata: { labels: { app: labels-synapse-operator } }
     spec:
       enableServiceLinks: false
-      nodeSelector: { topology: lan, kubernetes.io/arch: amd64 }
+      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+      tolerations:
+        - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       initContainers:
         - name: synapse-namespace-init
           image: alpine/curl:latest
