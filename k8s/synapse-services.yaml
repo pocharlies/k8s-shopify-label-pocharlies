@@ -1,0 +1,299 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: labels-synapse-operator
+  namespace: skirmshop
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: labels-synapse-operator
+  namespace: skirmshop
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "events", "configmaps", "secrets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: labels-synapse-operator
+  namespace: skirmshop
+subjects:
+  - kind: ServiceAccount
+    name: labels-synapse-operator
+    namespace: skirmshop
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: labels-synapse-operator
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: labels-shopify-fulfillment-service
+  namespace: skirmshop
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: labels-shopify-fulfillment-service } }
+  template:
+    metadata: { labels: { app: labels-shopify-fulfillment-service } }
+    spec:
+      enableServiceLinks: false
+      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+      tolerations:
+        - { key: role, operator: Equal, value: edge, effect: NoSchedule }
+      containers:
+        - name: shopify-fulfillment-service
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-fulfillment-service:20260522-synapse
+          ports: [{ name: http, containerPort: 3000 }]
+          env:
+            - { name: PORT, value: "3000" }
+            - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
+          envFrom: [{ secretRef: { name: labels-secrets } }]
+          resources:
+            requests: { cpu: 30m, memory: 64Mi }
+            limits: { memory: 256Mi }
+          readinessProbe:
+            httpGet: { path: /health, port: 3000 }
+            initialDelaySeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata: { name: labels-shopify-fulfillment-service, namespace: skirmshop }
+spec:
+  selector: { app: labels-shopify-fulfillment-service }
+  ports: [{ name: http, port: 3005, targetPort: 3000 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: labels-correos-express-adapter
+  namespace: skirmshop
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: labels-correos-express-adapter } }
+  template:
+    metadata: { labels: { app: labels-correos-express-adapter } }
+    spec:
+      enableServiceLinks: false
+      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+      tolerations:
+        - { key: role, operator: Equal, value: edge, effect: NoSchedule }
+      containers:
+        - name: correos-express-adapter
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter:20260522-synapse
+          ports: [{ name: http, containerPort: 3000 }]
+          env:
+            - { name: PORT, value: "3000" }
+            - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
+            - { name: LABEL_STORAGE_URL, value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007" }
+          envFrom:
+            - { secretRef: { name: labels-secrets } }
+            - { secretRef: { name: labels-cex-secrets } }
+          resources:
+            requests: { cpu: 30m, memory: 96Mi }
+            limits: { memory: 384Mi }
+          readinessProbe:
+            httpGet: { path: /health, port: 3000 }
+            initialDelaySeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata: { name: labels-correos-express-adapter, namespace: skirmshop }
+spec:
+  selector: { app: labels-correos-express-adapter }
+  ports: [{ name: http, port: 3003, targetPort: 3000 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: labels-correos-adapter
+  namespace: skirmshop
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: labels-correos-adapter } }
+  template:
+    metadata: { labels: { app: labels-correos-adapter } }
+    spec:
+      enableServiceLinks: false
+      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+      tolerations:
+        - { key: role, operator: Equal, value: edge, effect: NoSchedule }
+      containers:
+        - name: correos-adapter
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter:20260522-synapse
+          ports: [{ name: http, containerPort: 3000 }]
+          env:
+            - { name: PORT, value: "3000" }
+            - { name: NATS_URL, value: "nats://labels-nats.skirmshop.svc.cluster.local:4222" }
+            - { name: LABEL_STORAGE_URL, value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007" }
+          envFrom: [{ secretRef: { name: labels-secrets } }]
+          resources:
+            requests: { cpu: 20m, memory: 64Mi }
+            limits: { memory: 256Mi }
+          readinessProbe:
+            httpGet: { path: /health, port: 3000 }
+            initialDelaySeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata: { name: labels-correos-adapter, namespace: skirmshop }
+spec:
+  selector: { app: labels-correos-adapter }
+  ports: [{ name: http, port: 3011, targetPort: 3000 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: labels-notification-dispatcher
+  namespace: skirmshop
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: labels-notification-dispatcher } }
+  template:
+    metadata: { labels: { app: labels-notification-dispatcher } }
+    spec:
+      enableServiceLinks: false
+      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+      tolerations:
+        - { key: role, operator: Equal, value: edge, effect: NoSchedule }
+      containers:
+        - name: notification-dispatcher
+          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher:20260522-synapse
+          ports: [{ name: http, containerPort: 3000 }]
+          env:
+            - { name: PORT, value: "3000" }
+            - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
+            - { name: NOTIFICATIONS_ENABLED, value: "false" }
+            - { name: EMAIL_ENABLED, value: "false" }
+            - { name: WHATSAPP_ENABLED, value: "false" }
+            - { name: TELEGRAM_ENABLED, value: "false" }
+          envFrom: [{ secretRef: { name: labels-secrets } }]
+          resources:
+            requests: { cpu: 20m, memory: 64Mi }
+            limits: { memory: 256Mi }
+          readinessProbe:
+            httpGet: { path: /ready, port: 3000 }
+            initialDelaySeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata: { name: labels-notification-dispatcher, namespace: skirmshop }
+spec:
+  selector: { app: labels-notification-dispatcher }
+  ports: [{ name: http, port: 3007, targetPort: 3000 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: labels-event-projector
+  namespace: skirmshop
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: labels-event-projector } }
+  template:
+    metadata: { labels: { app: labels-event-projector } }
+    spec:
+      enableServiceLinks: false
+      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+      tolerations:
+        - { key: role, operator: Equal, value: edge, effect: NoSchedule }
+      containers:
+        - name: event-projector
+          image: harbor.e-dani.com/homelab/skirmshop-labels-event-projector:20260522-synapse
+          ports: [{ name: http, containerPort: 3000 }]
+          env:
+            - { name: PORT, value: "3000" }
+            - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
+            - { name: NATS_URL, value: "nats://labels-nats.skirmshop.svc.cluster.local:4222" }
+            - { name: NATS_STREAM, value: "SHIPPING_EVENTS" }
+            - { name: NATS_DURABLE, value: "event-projector" }
+            - { name: NATS_FILTER_SUBJECT, value: "shipping.events.>" }
+            - { name: NATS_SUBJECTS, value: "shipping.events.>" }
+            - { name: SYNAPSE_CORRELATOR_URL, value: "http://labels-synapse-correlator.skirmshop.svc.cluster.local:8080/" }
+          envFrom: [{ secretRef: { name: labels-secrets } }]
+          resources:
+            requests: { cpu: 30m, memory: 64Mi }
+            limits: { memory: 256Mi }
+          readinessProbe:
+            httpGet: { path: /ready, port: 3000 }
+            initialDelaySeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata: { name: labels-event-projector, namespace: skirmshop }
+spec:
+  selector: { app: labels-event-projector }
+  ports: [{ name: http, port: 3009, targetPort: 3000 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: labels-tracking-ingestion
+  namespace: skirmshop
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: labels-tracking-ingestion } }
+  template:
+    metadata: { labels: { app: labels-tracking-ingestion } }
+    spec:
+      enableServiceLinks: false
+      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+      tolerations:
+        - { key: role, operator: Equal, value: edge, effect: NoSchedule }
+      containers:
+        - name: tracking-ingestion
+          image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-ingestion:20260522-synapse
+          ports: [{ name: http, containerPort: 3000 }]
+          env:
+            - { name: PORT, value: "3000" }
+            - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
+            - { name: NATS_URL, value: "nats://labels-nats.skirmshop.svc.cluster.local:4222" }
+            - { name: NATS_STREAM, value: "SHIPPING_EVENTS" }
+          envFrom: [{ secretRef: { name: labels-secrets } }]
+          resources:
+            requests: { cpu: 20m, memory: 64Mi }
+            limits: { memory: 256Mi }
+          readinessProbe:
+            httpGet: { path: /ready, port: 3000 }
+            initialDelaySeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata: { name: labels-tracking-ingestion, namespace: skirmshop }
+spec:
+  selector: { app: labels-tracking-ingestion }
+  ports: [{ name: http, port: 3008, targetPort: 3000 }]
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: labels-synapse-workflow-registrar-v128
+  namespace: skirmshop
+spec:
+  backoffLimit: 2
+  template:
+    metadata: { labels: { app: labels-synapse-workflow-registrar } }
+    spec:
+      restartPolicy: Never
+      enableServiceLinks: false
+      nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+      tolerations:
+        - { key: role, operator: Equal, value: edge, effect: NoSchedule }
+      containers:
+        - name: synapse-workflow-registrar
+          image: harbor.e-dani.com/homelab/skirmshop-labels-synapse-workflow-registrar:20260522-synapse
+          env:
+            - { name: SYNAPSE_API_URL, value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080" }
+            - { name: WORKFLOWS_DIR, value: "/workflows" }
+            - { name: WORKFLOW_FILES, value: "generate-shipment-label.yaml,handle-tracking-event.yaml,process-return.yaml,poll-tracking.yaml" }
+          envFrom: [{ secretRef: { name: labels-secrets } }]
+          volumeMounts:
+            - { name: workflows, mountPath: /workflows, readOnly: true }
+          resources:
+            requests: { cpu: 20m, memory: 64Mi }
+            limits: { memory: 256Mi }
+      volumes:
+        - name: workflows
+          configMap: { name: labels-synapse-workflows }

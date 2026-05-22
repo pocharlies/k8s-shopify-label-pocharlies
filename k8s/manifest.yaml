@@ -150,6 +150,12 @@ spec:
             - { name: POSTGRES_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
             - { name: REDIS_URL, value: "redis://labels-redis.skirmshop.svc.cluster.local:6379" }
             - { name: RABBITMQ_URL, value: "amqp://$(RABBITMQ_USER):$(RABBITMQ_PASS)@shared-rabbitmq.databases.svc.cluster.local:5672" }
+            - { name: ROUTING_SERVICE_URL, value: "http://labels-routing-service.skirmshop.svc.cluster.local:3001" }
+            - { name: CEX_ADAPTER_URL, value: "http://labels-correos-express-adapter.skirmshop.svc.cluster.local:3003" }
+            - { name: UPS_ADAPTER_URL, value: "http://labels-ups-adapter.skirmshop.svc.cluster.local:3002" }
+            - { name: CORREOS_ADAPTER_URL, value: "http://labels-correos-adapter.skirmshop.svc.cluster.local:3011" }
+            - { name: LABEL_STORAGE_URL, value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007" }
+            - { name: CORREOS_ENABLED, value: "false" }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
             requests: { cpu: 50m, memory: 64Mi }
@@ -315,6 +321,7 @@ spec:
             - { name: POSTGRES_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
             - { name: NATS_URL, value: "nats://labels-nats.skirmshop.svc.cluster.local:4222" }
             - { name: SYNAPSE_API_URL, value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080" }
+            - { name: SYNAPSE_WORKFLOW_VERSION, value: "1.2.8" }
             - { name: SHOPIFY_APP_INTERNAL_URL, value: "http://labels-shopify-app.skirmshop.svc.cluster.local:3004" }
             - { name: EXISTING_FULFILLMENT_GUARD_ENABLED, value: "false" }
           envFrom: [{ secretRef: { name: labels-secrets } }]
@@ -358,6 +365,9 @@ spec:
             - { name: DATABASE_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
             - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
             - { name: POSTGRES_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
+            - { name: REDIS_URL, value: "redis://labels-redis.skirmshop.svc.cluster.local:6379" }
+            - { name: LABEL_STORAGE_URL, value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007" }
+            - { name: UPS_ISC1_ENROLLED, value: "true" }
             - { name: NATS_URL, value: "nats://labels-nats.skirmshop.svc.cluster.local:4222" }
             - { name: RELAY_BATCH_SIZE, value: "10" }
           envFrom: [{ secretRef: { name: labels-secrets } }]
@@ -550,14 +560,13 @@ metadata:
   name: labels-synapse-operator
   namespace: skirmshop
 spec:
-  # Disabled until workflows are registered with k8s service names and the
-  # remaining Compose-only services are migrated.
-  replicas: 0
+  replicas: 1
   selector: { matchLabels: { app: labels-synapse-operator } }
   template:
     metadata: { labels: { app: labels-synapse-operator } }
     spec:
       enableServiceLinks: false
+      serviceAccountName: labels-synapse-operator
       nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
       tolerations:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }

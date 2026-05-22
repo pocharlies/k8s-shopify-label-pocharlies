@@ -1,0 +1,980 @@
+apiVersion: v1
+data:
+  generate-shipment-label.yaml: |
+    # ============================================================================
+    # generate-shipment-label.yaml — Skirmshop shipping saga
+    # ============================================================================
+    # Serverless Workflow DSL v1.0. Executed by the Synapse Runner (RESEARCH.md §1).
+    #
+    # Triggered by:  an OrderPaid CloudEvent received on the NATS bus
+    # Produces:      ShipmentCompleted on success, ShipmentFailed on compensation
+    #
+    # Saga stages (RESEARCH.md §Commands):
+    #   1. resolveRouting                    → ups | correos_express | correos | fail
+    #   2. createShipment                    → emits CarrierRequested (async)
+    #   3. wait for CarrierAccepted          → listen, CE Correlator matches on subject=orderId
+    #   4. persistLabel                      → store carrier label bytes to S3/R2
+    #   5. updateShopify                     → fulfillmentCreate GraphQL
+    #   6. complete                          → emit ShipmentCompleted
+    #
+    # Compensation (DSL v1.0 has no `compensate` verb — we use try/catch + explicit
+    # endpoint calls per RESEARCH.md §6.1 C1):
+    #   - routing fails           → emit ShipmentFailed{stage:routing}, stop.
+    #   - carrier create fails    → call <carrier-adapter>/compensate, emit ShipmentFailed.
+    #   - wait times out (PT2M)   → emit ShipmentFailed{stage:wait-confirmation}.
+    #   - label persist fails     → call <carrier-adapter>/compensate, emit ShipmentFailed.
+    #   - fulfillment fails       → call <carrier-adapter>/compensate, emit ShipmentFailed.
+    #
+    # Idempotency: `numEnvio` (CEX) and `TransactionReference.CustomerContext`
+    # (UPS) are derived from `shipmentId` so re-drives do not duplicate shipments
+    # at the carrier. RESEARCH.md §4.2 + §3.4.
+    # ============================================================================
+
+    document:
+      dsl: '1.0.0'
+      namespace: skirmshop
+      name: generate-shipment-label
+      version: '1.2.8'
+      summary: |
+        Full shipping saga for a paid Shopify order. Routes to UPS, Correos
+        Express or Correos matriz, persists the label, updates
+        the Shopify fulfillment, emits ShipmentCompleted.
+
+    use:
+      # Authoritative CloudEvent schemas for every listen / emit below. When a
+      # schema drifts, we bump the `.vN` suffix and run both versions in parallel.
+      authentications:
+        shipping-internal:
+          bearer:
+            token: $secrets.SYNAPSE_API_TOKEN
+
+    input:
+      schema:
+        format: json
+        document:
+          type: object
+          required: [shipmentId, orderId, correlationId, destination, items]
+          properties:
+            shipmentId:
+              type: string
+              format: uuid
+            orderId:
+              type: string
+              pattern: '^gid://shopify/Order/\d+$'
+            correlationId:
+              type: string
+              format: uuid
+            destination:
+              type: object
+            items:
+              type: array
+              minItems: 1
+            origin:
+              type: object
+            pickupPointId:
+              type: string
+            pickupPointCarrier:
+              type: string
+            pickupPointName:
+              type: string
+            pickupPointAddress:
+              type: string
+            pickupPointRequired:
+              type: boolean
+            shippingMethodTitle:
+              type: string
+            shippingMethodCode:
+              type: string
+            shippingMethodSource:
+              type: string
+            paymentMethod:
+              type: string
+            insuredValue:
+              type: object
+
+    do:
+      # -- 1. Resolve routing ----------------------------------------------
+      - resolveRouting:
+          try:
+            - resolveRoutingCall:
+                call: http
+                with:
+                  method: post
+                  endpoint: http://labels-routing-service.skirmshop.svc.cluster.local:3001/resolve
+                  headers:
+                    content-type: application/json
+                    x-correlation-id: '${ .correlationId }'
+                  body:
+                    orderId: '${ .orderId }'
+                    destination: '${ .destination }'
+                    items: '${ .items }'
+                    paymentMethod: '${ .paymentMethod }'
+                output:
+                  as: '${ $input + { routing: $output } }'
+          catch:
+            errors:
+              with:
+                type: all
+            as: err
+            do:
+              - routingFailed:
+                  emit:
+                    event:
+                      with:
+                        type: com.skirmshop.shipping.shipmentfailed.v1
+                        source: urn:skirmshop:shipping-app:synapse
+                        subject: '${ .orderId }'
+                        data:
+                          orderId: '${ .orderId }'
+                          stage: routing
+                          reason: '${ $context.err | tostring }'
+                          compensationApplied: false
+              - raise:
+                  error:
+                    type: 'https://skirmshop.es/errors/routing-failed'
+                    status: 500
+                    detail: routing failed
+
+      - routingGate:
+          switch:
+            - routingResolved:
+                when: .routing.ok == true
+                then: pickupPointGate
+            - routingRejected:
+                then: exit
+          # If `.routing.ok == false`, the routing-service surfaced a gate
+          # (e.g. canarias-customs-not-supported / no-hazmat-matched). We
+          # simply exit the saga; the operator must intervene. A downstream
+          # consumer listens for the RoutingFailed CloudEvent.
+
+      - pickupPointGate:
+          switch:
+            - upsAccessPointPending:
+                when: .routing.decision.carrier == "ups" and .pickupPointRequired == true and .pickupPointId == null
+                then: pickupPointRequired
+            - shipmentReady:
+                then: createShipment
+
+      - pickupPointRequired:
+          emit:
+            event:
+              with:
+                type: com.skirmshop.shipping.pickuppointrequired.v1
+                source: urn:skirmshop:shipping-app:synapse
+                subject: '${ .orderId }'
+                data:
+                  orderId: '${ .orderId }'
+                  shipmentId: '${ .shipmentId }'
+                  carrier: ups
+                  reason: 'UPS Access Point selected at checkout; waiting for post-payment point selection before creating label'
+          then: exit
+
+      # -- 2. Create shipment on the chosen carrier ------------------------
+      - createShipment:
+          switch:
+            - toUps:
+                when: .routing.decision.carrier == "ups"
+                then: upsCreate
+            - toCex:
+                when: .routing.decision.carrier == "correos_express"
+                then: cexCreate
+            - toCorreos:
+                when: .routing.decision.carrier == "correos"
+                then: correosCreate
+            - unknownCarrier:
+                then: failUnknownCarrier
+
+      - upsCreate:
+          try:
+            - upsCreateShipment:
+                call: http
+                with:
+                  method: post
+                  endpoint: http://labels-ups-adapter.skirmshop.svc.cluster.local:3002/shipments
+                  headers:
+                    content-type: application/json
+                    x-correlation-id: '${ .correlationId }'
+                  body:
+                    orderId: '${ .orderId }'
+                    shipmentId: '${ .shipmentId }'
+                    correlationId: '${ .correlationId }'
+                    routing: '${ .routing.decision }'
+                    order:
+                      destination: '${ .destination }'
+                      items: '${ .items }'
+                      origin: '${ .origin }'
+                      pickupPointId: '${ .pickupPointId }'
+                      pickupPointCarrier: '${ .pickupPointCarrier }'
+                      insuredValue: '${ .insuredValue }'
+                output:
+                  as: '${ $input + { carrierConfirmed: { data: $output.carrierAccepted } } }'
+          catch:
+            errors:
+              with:
+                type: all
+            as: err
+            do:
+              - upsCompensate:
+                  call: http
+                  with:
+                    method: post
+                    endpoint: http://labels-ups-adapter.skirmshop.svc.cluster.local:3002/compensate
+                    body:
+                      shipmentId: '${ .shipmentId }'
+                      correlationId: '${ .correlationId }'
+                      stage: creation
+                      reason: 'ups createShipment failed'
+              - raise:
+                  error:
+                    type: 'https://skirmshop.es/errors/carrier-create-failed'
+                    status: 502
+                    detail: ups create failed
+          then: persistLabel
+
+      - cexCreate:
+          try:
+            - cexCreateShipment:
+                call: http
+                with:
+                  method: post
+                  endpoint: http://labels-correos-express-adapter.skirmshop.svc.cluster.local:3003/shipments
+                  headers:
+                    content-type: application/json
+                    x-correlation-id: '${ .correlationId }'
+                  body:
+                    orderId: '${ .orderId }'
+                    shipmentId: '${ .shipmentId }'
+                    correlationId: '${ .correlationId }'
+                    routing: '${ .routing.decision }'
+                    order:
+                      origin: '${ .origin }'
+                      destination: '${ .destination }'
+                      items: '${ .items }'
+                output:
+                  as: '${ $input + { carrierConfirmed: { data: $output.carrierAccepted } } }'
+          catch:
+            errors:
+              with:
+                type: all
+            as: err
+            do:
+              - cexCompensate:
+                  call: http
+                  with:
+                    method: post
+                    endpoint: http://labels-correos-express-adapter.skirmshop.svc.cluster.local:3003/compensate
+                    body:
+                      shipmentId: '${ .shipmentId }'
+                      correlationId: '${ .correlationId }'
+                      stage: creation
+                      reason: 'cex grabacionEnvio failed'
+              - raise:
+                  error:
+                    type: 'https://skirmshop.es/errors/carrier-create-failed'
+                    status: 502
+                    detail: cex create failed
+          then: persistLabel
+
+      - correosCreate:
+          try:
+            - correosCreateShipment:
+                call: http
+                with:
+                  method: post
+                  endpoint: http://labels-correos-adapter.skirmshop.svc.cluster.local:3011/shipments
+                  headers:
+                    content-type: application/json
+                    x-correlation-id: '${ .correlationId }'
+                  body:
+                    orderId: '${ .orderId }'
+                    shipmentId: '${ .shipmentId }'
+                    correlationId: '${ .correlationId }'
+                    routing: '${ .routing.decision }'
+                    order:
+                      origin: '${ .origin }'
+                      destination: '${ .destination }'
+                      items: '${ .items }'
+                output:
+                  as: '${ $input }'
+          catch:
+            errors:
+              with:
+                type: all
+            as: err
+            do:
+              - raise:
+                  error:
+                    type: 'https://skirmshop.es/errors/carrier-create-failed'
+                    status: 502
+                    detail: correos matriz create failed
+          then: persistLabel
+
+      - failUnknownCarrier:
+          emit:
+            event:
+              with:
+                type: com.skirmshop.shipping.shipmentfailed.v1
+                source: urn:skirmshop:shipping-app:synapse
+                subject: '${ .orderId }'
+                data:
+                  orderId: '${ .orderId }'
+                  stage: routing
+                  reason: 'Routing decision carrier is not ups, correos_express or correos'
+                  compensationApplied: false
+          then: exit
+
+      # -- 3. Wait for CarrierAccepted (adapters publish this asynchronously
+      #       after their HTTP call returns 202). The Synapse Correlator
+      #       matches on `subject == .orderId`. Note: the pinned Synapse alpha image
+      #       currently drops task-level `timeout` during persistence, so timeout
+      #       remediation must remain operational until the runtime is upgraded.
+      - waitForCarrierConfirmation:
+          try:
+            - waitForCarrierAccepted:
+                listen:
+                  to:
+                    one:
+                      with:
+                        type: com.skirmshop.shipping.carrieraccepted.v1
+                        subject: '${ .orderId }'
+                output:
+                  as: '${ $input + { carrierConfirmed: $output } }'
+          catch:
+            errors:
+              with:
+                type: all
+            as: err
+            do:
+              - compensateOnTimeout:
+                  call: http
+                  with:
+                    method: post
+                    endpoint: 'http://${ .routing.decision.carrier | sub("_","-") }-adapter/compensate'
+                    body:
+                      shipmentId: '${ .shipmentId }'
+                      correlationId: '${ .correlationId }'
+                      stage: wait-confirmation
+                      reason: 'Carrier did not confirm within PT2M'
+              - emitFailed:
+                  emit:
+                    event:
+                      with:
+                        type: com.skirmshop.shipping.shipmentfailed.v1
+                        source: urn:skirmshop:shipping-app:synapse
+                        subject: '${ .orderId }'
+                        data:
+                          orderId: '${ .orderId }'
+                          stage: wait-confirmation
+                          reason: 'Carrier did not confirm within PT2M'
+                          compensationApplied: true
+              - raise:
+                  error:
+                    type: 'https://skirmshop.es/errors/carrier-timeout'
+                    status: 504
+                    detail: carrier did not confirm within PT2M
+
+      # -- 4. Persist the label binary to S3 / R2 (label-storage service).
+      - persistLabel:
+          try:
+            - persistLabelBytes:
+                call: http
+                with:
+                  method: post
+                  endpoint: http://labels-label-storage.skirmshop.svc.cluster.local:3007/persist
+                  headers:
+                    content-type: application/json
+                    x-correlation-id: '${ .correlationId }'
+                  body:
+                    shipmentId: '${ .shipmentId }'
+                    labelBytesRef: '${ .carrierConfirmed.data.labelBytesRef }'
+                    labelFormat: '${ .carrierConfirmed.data.labelFormat }'
+                output:
+                  as: '${ $input + { labelStored: $output } }'
+          catch:
+            errors:
+              with:
+                type: all
+            as: err
+            do:
+              - emitFailedAtStorage:
+                  emit:
+                    event:
+                      with:
+                        type: com.skirmshop.shipping.shipmentfailed.v1
+                        source: urn:skirmshop:shipping-app:synapse
+                        subject: '${ .orderId }'
+                        data:
+                          orderId: '${ .orderId }'
+                          stage: label-persist
+                          reason: 'Label storage failed'
+                          compensationApplied: false
+              - raise:
+                  error: { status: 500, detail: label persist failed }
+
+      # -- 5. Update Shopify fulfillment (fulfillmentCreate mutation).
+      - updateShopify:
+          try:
+            - createShopifyFulfillment:
+                call: http
+                with:
+                  method: post
+                  endpoint: http://labels-shopify-fulfillment-service.skirmshop.svc.cluster.local:3005/fulfillments
+                  headers:
+                    content-type: application/json
+                    x-correlation-id: '${ .correlationId }'
+                  body:
+                    orderId: '${ .orderId }'
+                    shipmentId: '${ .shipmentId }'
+                    correlationId: '${ .correlationId }'
+                    carrier: '${ .routing.decision.carrier }'
+                    trackingNumber: '${ .carrierConfirmed.data.trackingNumber }'
+                    trackingUrl: '${ .carrierConfirmed.data.trackingUrl }'
+                    notifyCustomer: true
+                output:
+                  as: '${ $input + { fulfillmentUpdated: $output } }'
+          catch:
+            errors:
+              with:
+                type: all
+            as: err
+            do:
+              - emitFailedAtFulfill:
+                  emit:
+                    event:
+                      with:
+                        type: com.skirmshop.shipping.shipmentfailed.v1
+                        source: urn:skirmshop:shipping-app:synapse
+                        subject: '${ .orderId }'
+                        data:
+                          orderId: '${ .orderId }'
+                          stage: fulfillment
+                          reason: 'fulfillmentCreate failed'
+                          compensationApplied: false
+              - raise:
+                  error: { status: 500, detail: fulfillment failed }
+
+      # -- 6. Happy path — emit ShipmentCompleted ---------------------------
+      - complete:
+          emit:
+            event:
+              with:
+                type: com.skirmshop.shipping.shipmentcompleted.v1
+                source: urn:skirmshop:shipping-app:synapse
+                subject: '${ .orderId }'
+                data:
+                  shipmentId: '${ .shipmentId }'
+                  totalDurationMs: '${ $workflow.startedAt | now - . }'
+  handle-tracking-event.yaml: |
+    # ============================================================================
+    # handle-tracking-event.yaml — fan-out tracking events to notifications
+    # ============================================================================
+    # Listens on `TrackingEventReceived`, builds the per-status notification
+    # kind, and POSTs to the notification-dispatcher. The dispatcher resolves
+    # the recipient + sends via every enabled channel (email / WhatsApp /
+    # Telegram). Cap on retries so a customer doesn't get a flood when the
+    # carrier emits the same exception multiple times — JetStream dedup
+    # (msgID = event.id) already prevents that, but we add saga-side
+    # back-pressure for the corner case where dedup misses.
+    # ============================================================================
+
+    document:
+      dsl: '1.0.0'
+      namespace: skirmshop
+      name: handle-tracking-event
+      version: '1.0.0'
+      summary: 'Fan-out per-status notifications when a tracking event lands'
+
+    input:
+      schema:
+        format: json
+        document:
+          type: object
+          properties:
+            shipmentId: { type: string }
+            carrier: { type: string }
+            normalizedStatus:
+              type: string
+              enum:
+                - CREATED
+                - PICKED_UP
+                - IN_TRANSIT
+                - OUT_FOR_DELIVERY
+                - DELIVERED
+                - EXCEPTION
+                - RETURNED
+            rawCode: { type: string }
+            occurredAt: { type: string }
+            rawPayload: { type: object }
+
+    do:
+      - resolveOrderId:
+          # Look up the orderId for this shipmentId. The dispatcher's
+          # /notify takes orderId; tracking events arrive keyed by
+          # shipmentId so we hop through the event_store via a thin
+          # lookup endpoint on shopify-app /api/internal/order-by-shipment.
+          call: http
+          with:
+            method: get
+            endpoint: 'http://labels-shopify-app.skirmshop.svc.cluster.local:3004/api/internal/order-by-shipment/{{ .shipmentId }}'
+          output:
+            as: '. as $ref | { orderId: $ref.orderId }'
+
+      - decideKind:
+          switch:
+            - delivered:
+                when: '.normalizedStatus == "DELIVERED"'
+                then: notifyDelivered
+            - exception:
+                when: '.normalizedStatus == "EXCEPTION"'
+                then: notifyException
+            - shipping:
+                when: '.normalizedStatus == "PICKED_UP" or .normalizedStatus == "OUT_FOR_DELIVERY" or .normalizedStatus == "IN_TRANSIT"'
+                then: notifyUpdate
+            - default:
+                then: end
+
+      - notifyDelivered:
+          call: http
+          with:
+            method: post
+            endpoint: 'http://labels-notification-dispatcher.skirmshop.svc.cluster.local:3007/notify'
+            body:
+              kind: 'shipping_completed'
+              orderId: '${ .orderId }'
+          then: end
+
+      - notifyException:
+          call: http
+          with:
+            method: post
+            endpoint: 'http://labels-notification-dispatcher.skirmshop.svc.cluster.local:3007/notify'
+            body:
+              kind: 'shipping_failed'
+              orderId: '${ .orderId }'
+              reason: '${ "carrier exception: " + .rawCode }'
+          then: end
+
+      - notifyUpdate:
+          call: http
+          with:
+            method: post
+            endpoint: 'http://labels-notification-dispatcher.skirmshop.svc.cluster.local:3007/notify'
+            body:
+              kind: 'shipping_update'
+              orderId: '${ .orderId }'
+          then: end
+  poll-tracking.yaml: |
+    # ============================================================================
+    # poll-tracking.yaml — fallback tracking poller
+    # ============================================================================
+    # Triggered by an internal PollTrackingRequested event for one accepted
+    # shipment. UPS, Correos Express and Correos matriz are wired; Correos matriz
+    # remains constrained to peninsular recambios/accessories by routing policy.
+    # ============================================================================
+
+    document:
+      dsl: '1.0.0'
+      namespace: skirmshop
+      name: poll-tracking
+      version: '1.2.0'
+      summary: 'Poll UPS/CEX tracking and emit a canonical TrackingEventReceived event.'
+
+    input:
+      schema:
+        format: json
+        document:
+          type: object
+          required: [shipmentId, orderId, carrier, trackingNumber, correlationId]
+          properties:
+            shipmentId: { type: string, format: uuid }
+            orderId: { type: string, pattern: '^gid://shopify/Order/\d+$' }
+            carrier:
+              type: string
+              enum: [ups, correos_express, correos]
+            trackingNumber: { type: string, minLength: 1 }
+            correlationId: { type: string, format: uuid }
+
+    do:
+      - dispatchByCarrier:
+          switch:
+            - upsBranch:
+                when: '${ .carrier == "ups" }'
+                then: pollUps
+            - cexBranch:
+                when: '${ .carrier == "correos_express" }'
+                then: pollCex
+            - correosBranch:
+                when: '${ .carrier == "correos" }'
+                then: pollCorreos
+            - unsupported:
+                when: '${ true }'
+                then: failUnsupportedCarrier
+
+      - pollUps:
+          call: http
+          with:
+            method: get
+            endpoint: 'http://labels-ups-adapter.skirmshop.svc.cluster.local:3002/tracking/${ .trackingNumber | @uri }'
+            headers:
+              accept: application/json
+              x-correlation-id: '${ .correlationId }'
+          output:
+            as: '.tracking'
+          then: emitTrackingEvent
+
+      - pollCex:
+          call: http
+          with:
+            method: get
+            endpoint: 'http://labels-correos-express-adapter.skirmshop.svc.cluster.local:3003/tracking/${ .trackingNumber | @uri }'
+            headers:
+              accept: application/json
+              x-correlation-id: '${ .correlationId }'
+          output:
+            as: '.tracking'
+          then: emitTrackingEvent
+
+      - pollCorreos:
+          call: http
+          with:
+            method: get
+            endpoint: 'http://labels-correos-adapter.skirmshop.svc.cluster.local:3011/tracking/${ .trackingNumber | @uri }'
+            headers:
+              accept: application/json
+              x-correlation-id: '${ .correlationId }'
+          output:
+            as: '.tracking'
+          then: emitTrackingEvent
+
+      - emitTrackingEvent:
+          emit:
+            event:
+              with:
+                type: com.skirmshop.shipping.trackingeventreceived.v1
+                source: urn:skirmshop:shipping-app:synapse:poll-tracking
+                subject: '${ .orderId }'
+                data:
+                  shipmentId: '${ .shipmentId }'
+                  carrier: '${ .carrier }'
+                  trackingNumber: '${ .trackingNumber }'
+                  rawCode: '${ .tracking.rawStatusCode }'
+                  normalizedStatus: '${ .tracking.normalizedStatus }'
+                  description: '${ .tracking.description // "" }'
+                  location: '${ .tracking.location // "" }'
+                  occurredAt: '${ .tracking.occurredAt // now }'
+                  rawPayload: '${ .tracking }'
+          then: end
+
+      - failUnsupportedCarrier:
+          raise:
+            error: tracking-carrier-unsupported
+  process-return.yaml: |
+    # ============================================================================
+    # process-return.yaml — Skirmshop returns saga (M15)
+    # ============================================================================
+    # Serverless Workflow DSL v1.0. Executed by the Synapse Runner.
+    #
+    # Triggered by:  a ReturnRequested CloudEvent on the NATS bus
+    #                (emitted by /webhooks/shopify/returns-request OR by the
+    #                 admin /api/returns POST flow)
+    # Produces:      ReturnLabelGenerated on success
+    #
+    # Saga stages:
+    #   1. fetchReturnContext   → GET /api/internal/order/:orderId/return-context
+    #                             gives us {carrier, originalCarrierShipmentId,
+    #                             customer, totalKilos, currency}
+    #   2. dispatchToCarrier    → switch on carrier
+    #       - ups               → POST http://labels-ups-adapter.skirmshop.svc.cluster.local:3002/returns
+    #       - correos_express   → POST http://labels-correos-express-adapter.skirmshop.svc.cluster.local:3003/returns
+    #                             (CEX requires a customer DNI/NIE that the
+    #                             webhook payload doesn't carry; the saga
+    #                             gates on its presence and falls back to
+    #                             email-the-customer otherwise)
+    #   3. notifyCustomer       → POST http://labels-notification-dispatcher.skirmshop.svc.cluster.local:3007/notify
+    #                             with the new label URL embedded
+    #
+    # Failure handling: every step that calls a downstream service catches
+    # all errors and emits a ReturnFailed-style log without compensating
+    # (returns are idempotent on our side — re-driving the saga is safe).
+    #
+    # Until the customer DNI / NIE capture lands in the Shopify checkout
+    # extension, the CEX branch falls back to a notification asking ops to
+    # complete the return manually via /api/returns/:id/label. The UPS
+    # branch needs no DNI and runs end-to-end.
+    # ============================================================================
+
+    document:
+      dsl: '1.0.0'
+      namespace: skirmshop
+      name: process-return
+      version: '1.1.0'
+      summary: |
+        Auto-generate a return label when ReturnRequested fires. UPS branch
+        runs end-to-end; CEX branch hands off to ops because the customer's
+        DNI is required and we don't capture it in the Shopify webhook yet.
+
+    input:
+      schema:
+        format: json
+        document:
+          type: object
+          required: [returnId, orderId, customerEmail]
+          properties:
+            returnId:
+              type: string
+              format: uuid
+            orderId:
+              type: string
+              pattern: '^gid://shopify/Order/\d+$'
+            customerEmail:
+              type: string
+              format: email
+            correlationId:
+              type: string
+              format: uuid
+
+    do:
+      # -- 1. Resolve carrier + customer from event_store -------------------
+      - fetchReturnContext:
+          try:
+            - fetchReturnContextCall:
+                call: http
+                with:
+                  method: get
+                  endpoint: 'http://labels-shopify-app.skirmshop.svc.cluster.local:3004/api/internal/order/${ .orderId | @uri }/return-context'
+                  headers:
+                    accept: application/json
+                    x-correlation-id: '${ .correlationId }'
+                output:
+                  as: '.context'
+          catch:
+            errors:
+              with:
+                type: all
+            as: err
+            do:
+              - logUnknownOrder:
+                  emit:
+                    event:
+                      with:
+                        type: com.skirmshop.shipping.returnfailed.v1
+                        source: urn:skirmshop:shipping-app:synapse
+                        subject: '${ .orderId }'
+                        data:
+                          returnId: '${ .returnId }'
+                          orderId: '${ .orderId }'
+                          stage: fetch-context
+                          reason: '${ $context.err | tostring }'
+              - raise:
+                  error: { type: 'https://skirmshop.es/errors/return-context', status: 404, detail: order not found }
+
+      # -- 2. Dispatch to the matching carrier ------------------------------
+      - dispatchByCarrier:
+          switch:
+            - upsBranch:
+                when: '${ .context.carrier == "ups" }'
+                then: callUpsReturns
+            - cexWithDniBranch:
+                # End-to-end CEX flow when the storefront tax-id field
+                # captured the customer's DNI/NIE (M16.4). The translator
+                # surfaces it as `customer.taxId` on the return-context.
+                when: '${ .context.carrier == "correos_express" and (.context.customer.taxId != null) and (.context.customer.taxId != "") }'
+                then: callCexReturns
+            - cexBranch:
+                when: '${ .context.carrier == "correos_express" }'
+                then: cexEmailFallback
+            - unknownBranch:
+                when: '${ true }'
+                then: failUnknownCarrier
+
+      # -- UPS Print-Return-Label (no DNI required) -------------------------
+      - callUpsReturns:
+          try:
+            - callUpsReturnsApi:
+                call: http
+                with:
+                  method: post
+                  endpoint: http://labels-ups-adapter.skirmshop.svc.cluster.local:3002/returns
+                  headers:
+                    content-type: application/json
+                    x-correlation-id: '${ .correlationId }'
+                  body:
+                    returnId: '${ .returnId }'
+                    orderId: '${ .orderId }'
+                    customer: '${ .context.customer }'
+                    kilos: '${ .context.totalKilos }'
+                output:
+                  as: '.upsResult'
+          catch:
+            errors:
+              with:
+                type: all
+            as: err
+            do:
+              - emitFailureUps:
+                  emit:
+                    event:
+                      with:
+                        type: com.skirmshop.shipping.returnfailed.v1
+                        source: urn:skirmshop:shipping-app:synapse
+                        subject: '${ .orderId }'
+                        data:
+                          returnId: '${ .returnId }'
+                          orderId: '${ .orderId }'
+                          stage: ups-returns
+                          reason: '${ $context.err | tostring }'
+              - raise:
+                  error: { type: 'https://skirmshop.es/errors/return-ups-failed', status: 502, detail: ups returns failed }
+          then: loadReturnLabel
+
+      # -- CEX Logística Inversa end-to-end (DNI present) -------------------
+      # When the storefront tax-id field captured the customer's NIF/NIE,
+      # we have everything CEX needs to issue the inverse label without
+      # human intervention. The adapter responds with numEnvio + base64
+      # label bytes, which we then forward to the customer as a PDF
+      # attachment via `notifyCustomer`.
+      - callCexReturns:
+          try:
+            - callCexReturnsApi:
+                call: http
+                with:
+                  method: post
+                  endpoint: http://labels-correos-express-adapter.skirmshop.svc.cluster.local:3003/returns
+                  headers:
+                    content-type: application/json
+                    x-correlation-id: '${ .correlationId }'
+                  body:
+                    returnId: '${ .returnId }'
+                    orderId: '${ .orderId }'
+                    motivoDevolucion: 'OTROS'
+                    dniCliente: '${ .context.customer.taxId }'
+                    origin:
+                      nombre: '${ .context.customer.name }'
+                      direccion: '${ .context.customer.address1 }'
+                      poblacion: '${ .context.customer.city }'
+                      codigoPostal: '${ .context.customer.postalCode }'
+                      pais: '${ .context.customer.countryCode }'
+                      telefonoContacto: '${ .context.customer.phoneE164 // "+34000000000" }'
+                      emailContacto: '${ .context.customer.email // .customerEmail }'
+                    bultos: 1
+                    kilos: '${ .context.totalKilos }'
+                    originalNumEnvio: '${ .context.originalCarrierShipmentId }'
+                output:
+                  as: '.cexResult'
+          catch:
+            errors:
+              with:
+                type: all
+            as: err
+            do:
+              - emitFailureCex:
+                  emit:
+                    event:
+                      with:
+                        type: com.skirmshop.shipping.returnfailed.v1
+                        source: urn:skirmshop:shipping-app:synapse
+                        subject: '${ .orderId }'
+                        data:
+                          returnId: '${ .returnId }'
+                          orderId: '${ .orderId }'
+                          stage: cex-returns
+                          reason: '${ $context.err | tostring }'
+              - raise:
+                  error: { type: 'https://skirmshop.es/errors/return-cex-failed', status: 502, detail: cex returns failed }
+          then: loadReturnLabel
+
+      # -- CEX Logística Inversa fallback (DNI not captured) ----------------
+      # When the customer never filled the tax-id field, we hand off to
+      # ops with a structured email and let them complete
+      # /api/returns/:id/label after collecting the DNI offline.
+      - cexEmailFallback:
+          call: http
+          with:
+            method: post
+            endpoint: http://labels-notification-dispatcher.skirmshop.svc.cluster.local:3007/notify
+            headers:
+              content-type: application/json
+              x-correlation-id: '${ .correlationId }'
+            body:
+              kind: shipping_failed
+              orderId: '${ .orderId }'
+              reason: 'cex-return-needs-dni'
+              recipientOverride:
+                name: 'Skirmshop Ops'
+                email: 'devoluciones@skirmshop.es'
+          then: exit
+
+      - failUnknownCarrier:
+          emit:
+            event:
+              with:
+                type: com.skirmshop.shipping.returnfailed.v1
+                source: urn:skirmshop:shipping-app:synapse
+                subject: '${ .orderId }'
+                data:
+                  returnId: '${ .returnId }'
+                  orderId: '${ .orderId }'
+                  stage: dispatch
+                  reason: 'unknown carrier in original CarrierAccepted'
+          then: exit
+
+      # -- 3. Load + notify the customer with the label ---------------------
+      # Carrier adapters may return either inline:<base64> (legacy/tests) or
+      # s3://... (production label-storage). label-storage normalises both to
+      # contentBase64 so the dispatcher can attach the PDF without knowing
+      # where the bytes live.
+      - loadReturnLabel:
+          call: http
+          with:
+            method: get
+            endpoint: 'http://labels-label-storage.skirmshop.svc.cluster.local:3007/content?ref=${ (((.upsResult.labelBytesRef // .cexResult.labelBytesRef) // "") | @uri) }'
+            headers:
+              x-correlation-id: '${ .correlationId }'
+          output:
+            as: '.returnLabelContent'
+          then: notifyCustomer
+
+      - notifyCustomer:
+          try:
+            - notifyCustomerCall:
+                call: http
+                with:
+                  method: post
+                  endpoint: http://labels-notification-dispatcher.skirmshop.svc.cluster.local:3007/notify
+                  headers:
+                    content-type: application/json
+                    x-correlation-id: '${ .correlationId }'
+                  body:
+                    kind: shipping_completed
+                    orderId: '${ .orderId }'
+                    recipientOverride:
+                      name: '${ .context.customer.name }'
+                      email: '${ .customerEmail }'
+                    attachments:
+                      - filename: 'return-label.pdf'
+                        contentType: '${ .returnLabelContent.contentType }'
+                        contentBase64: '${ .returnLabelContent.contentBase64 }'
+          catch:
+            errors:
+              with:
+                type: all
+            as: err
+            do:
+              # Notification failure isn't fatal — the label exists already
+              # and the admin UI surfaces it. We just log.
+              - logNotifyFailure:
+                  emit:
+                    event:
+                      with:
+                        type: com.skirmshop.shipping.returnnotificationfailed.v1
+                        source: urn:skirmshop:shipping-app:synapse
+                        subject: '${ .orderId }'
+                        data:
+                          returnId: '${ .returnId }'
+                          orderId: '${ .orderId }'
+                          reason: '${ $context.err | tostring }'
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: labels-synapse-workflows
+  namespace: skirmshop
