@@ -16,7 +16,7 @@ metadata:
   namespace: skirmshop
 spec:
   serviceName: labels-postgres
-  replicas: 1
+  replicas: 0
   selector: { matchLabels: { app: labels-postgres } }
   template:
     metadata: { labels: { app: labels-postgres } }
@@ -199,9 +199,9 @@ spec:
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
-            - { name: DATABASE_URL, value: "postgresql://$(LABELS_DB_USER):$(LABELS_DB_PASSWORD)@labels-postgres.skirmshop.svc.cluster.local:5432/labels" }
+            - { name: DATABASE_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
             - { name: REDIS_URL, value: "redis://labels-redis.skirmshop.svc.cluster.local:6379" }
-            - { name: RABBITMQ_URL, value: "amqp://$(RABBITMQ_USER):$(RABBITMQ_PASS)@shared-rabbitmq.skirmshop.svc.cluster.local:5672" }
+            - { name: RABBITMQ_URL, value: "amqp://$(RABBITMQ_USER):$(RABBITMQ_PASS)@shared-rabbitmq.databases.svc.cluster.local:5672" }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
             requests: { cpu: 50m, memory: 64Mi }
@@ -240,7 +240,7 @@ spec:
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
-            - { name: RABBITMQ_URL, value: "amqp://$(RABBITMQ_USER):$(RABBITMQ_PASS)@shared-rabbitmq.skirmshop.svc.cluster.local:5672" }
+            - { name: RABBITMQ_URL, value: "amqp://$(RABBITMQ_USER):$(RABBITMQ_PASS)@shared-rabbitmq.databases.svc.cluster.local:5672" }
             - { name: NATS_URL, value: "nats://labels-nats.skirmshop.svc.cluster.local:4222" }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
@@ -280,7 +280,7 @@ spec:
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
-            - { name: DATABASE_URL, value: "postgresql://$(LABELS_DB_USER):$(LABELS_DB_PASSWORD)@labels-postgres.skirmshop.svc.cluster.local:5432/labels" }
+            - { name: DATABASE_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
             requests: { cpu: 30m, memory: 64Mi }
