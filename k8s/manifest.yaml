@@ -655,7 +655,8 @@ spec:
       services:
         - name: labels-shopify-app
           port: 3004
-  tls: {}
+  tls:
+    store: { name: default, namespace: traefik-edge }
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
@@ -677,4 +678,5 @@ spec:
       services:
         - name: labels-ups-adapter
           port: 3002
-  tls: {}
+  tls:
+    store: { name: default, namespace: traefik-edge }
