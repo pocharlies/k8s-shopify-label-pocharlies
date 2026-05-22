@@ -496,6 +496,7 @@ metadata:
   namespace: skirmshop
 spec:
   replicas: 1
+  strategy: { type: Recreate }
   selector: { matchLabels: { app: labels-synapse-correlator } }
   template:
     metadata: { labels: { app: labels-synapse-correlator } }
@@ -561,6 +562,7 @@ metadata:
   namespace: skirmshop
 spec:
   replicas: 1
+  strategy: { type: Recreate }
   selector: { matchLabels: { app: labels-synapse-operator } }
   template:
     metadata: { labels: { app: labels-synapse-operator } }
