@@ -550,7 +550,9 @@ metadata:
   name: labels-synapse-operator
   namespace: skirmshop
 spec:
-  replicas: 1
+  # Disabled until workflows are registered with k8s service names and the
+  # remaining Compose-only services are migrated.
+  replicas: 0
   selector: { matchLabels: { app: labels-synapse-operator } }
   template:
     metadata: { labels: { app: labels-synapse-operator } }
