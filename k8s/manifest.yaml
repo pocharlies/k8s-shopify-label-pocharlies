@@ -687,6 +687,7 @@ spec:
   routes:
     - match: Host(`skirmshop.e-dani.com`) && Path(`/labels-ups`)
       kind: Rule
+      priority: 300
       middlewares:
         - name: redirect-labels-ups-root
       services:
@@ -694,6 +695,7 @@ spec:
           port: 3002
     - match: Host(`skirmshop.e-dani.com`) && PathPrefix(`/labels-ups`)
       kind: Rule
+      priority: 100
       middlewares:
         - name: strip-labels-ups
       services:
