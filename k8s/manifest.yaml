@@ -607,6 +607,9 @@ spec:
             - { name: SYNAPSE_RUNNER_API, value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080" }
             - { name: SYNAPSE_RUNNER_CONTAINER_PLATFORM, value: kubernetes }
             - { name: SYNAPSE_RUNNER_LIFECYCLE_EVENTS, value: "true" }
+            - { name: SYNAPSE_RUNTIME_MODE, value: kubernetes }
+            - { name: SYNAPSE_RUNTIME_K8S_NAMESPACE, value: skirmshop }
+            - { name: SYNAPSE_RUNTIME_K8S_SERVICE_ACCOUNT, value: labels-synapse-operator }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
             requests: { cpu: 30m, memory: 64Mi }
