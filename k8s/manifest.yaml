@@ -358,7 +358,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: outbox-relay
-          image: harbor.e-dani.com/homelab/skirmshop-labels-outbox-relay:latest
+          image: harbor.e-dani.com/homelab/skirmshop-labels-outbox-relay@sha256:d75273052d6960f36bea13addb78164443de3813d1f28a0692df70084ef800b0  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
