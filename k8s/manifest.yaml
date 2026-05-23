@@ -141,7 +141,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: shopify-app
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app:latest
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:05c0589e0aee72ebe6462ddf2f35293f3c2b32c70bfb89e2b67ed486fbb7dc1d  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -190,7 +190,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: event-gateway
-          image: harbor.e-dani.com/homelab/skirmshop-labels-event-gateway:latest
+          image: harbor.e-dani.com/homelab/skirmshop-labels-event-gateway@sha256:50884d0db3ba97edbf68e9a9df0f7c8f0bb084396234846c226b33c269e76e59  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -230,7 +230,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: label-storage
-          image: harbor.e-dani.com/homelab/skirmshop-labels-label-storage:latest
+          image: harbor.e-dani.com/homelab/skirmshop-labels-label-storage@sha256:e2ea9101a6e1adf6106ba68e7eaeb6f32203e6ced9b9157eb4c8d6f04ef82991  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -271,7 +271,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: routing-service
-          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service:latest
+          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:3a4b3c9f26f970e8b067ceaca1752d78a4208a295712ecbc3067fe09bbf1ad82  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -312,7 +312,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: saga-launcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher:latest
+          image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:47ff669f5a36407500280eab9fa7177c76dd20161a855ef5c390a122b368a1b2  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -404,7 +404,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: ups-adapter
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter:latest
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:e5cacc9cad3194da6ebd556ed4750304a31a6447158a11b7a1fe3fed18ae5ecd  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
