@@ -141,7 +141,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: shopify-app
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:a3210fa223c846c6d529fb09aa161ff1e2f8b13192f49b21ce63913fdd5bc4d0  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:65b50307ec650066a60f5941217763316c5533950a765e42f53652f851dd26a3  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -154,6 +154,7 @@ spec:
             - { name: REDIS_URL, value: "redis://labels-redis.skirmshop.svc.cluster.local:6379" }
             - { name: RABBITMQ_URL, value: "amqp://$(RABBITMQ_USER):$(RABBITMQ_PASS)@shared-rabbitmq.databases.svc.cluster.local:5672" }
             - { name: ROUTING_SERVICE_URL, value: "http://labels-routing-service.skirmshop.svc.cluster.local:3001" }
+            - { name: SYNAPSE_API_URL, value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080" }
             - { name: CEX_ADAPTER_URL, value: "http://labels-correos-express-adapter.skirmshop.svc.cluster.local:3003" }
             - { name: UPS_ADAPTER_URL, value: "http://labels-ups-adapter.skirmshop.svc.cluster.local:3002" }
             - { name: CORREOS_ADAPTER_URL, value: "http://labels-correos-adapter.skirmshop.svc.cluster.local:3011" }
