@@ -141,7 +141,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: shopify-app
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:05c0589e0aee72ebe6462ddf2f35293f3c2b32c70bfb89e2b67ed486fbb7dc1d  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:a3210fa223c846c6d529fb09aa161ff1e2f8b13192f49b21ce63913fdd5bc4d0  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
