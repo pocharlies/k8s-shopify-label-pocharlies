@@ -50,6 +50,7 @@ spec:
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
+            - { name: SHOPIFY_SHOP_DOMAIN, value: "ymimst-yh.myshopify.com" }
             - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
@@ -168,6 +169,7 @@ spec:
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
+            - { name: SHOPIFY_SHOP_DOMAIN, value: "ymimst-yh.myshopify.com" }
             - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
             - { name: NOTIFICATIONS_ENABLED, value: "false" }
             - { name: EMAIL_ENABLED, value: "false" }
