@@ -85,7 +85,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: correos-express-adapter
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:a386ccf1122972b289a38fe0c0c954577d1b2dee97bd451e95742aa5f0eaf23d
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:c7f4df711c2ae1189cbfeb74f87e6af291fc019b5a32fc43c4914d97e9d0ef7f
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -307,7 +307,7 @@ spec:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: labels-synapse-workflow-registrar-v1210-r3
+  name: labels-synapse-workflow-registrar-v1211-r1
   namespace: skirmshop
 spec:
   backoffLimit: 2

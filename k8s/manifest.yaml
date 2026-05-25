@@ -150,7 +150,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: shopify-app
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:73e89b6b670c3d921ac89a00da8319b806a8fafb3dd8a2430d3388c041fd59c9  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:a3aac05e557f043c35b52e66ddc123c6ada97dea492f5f27699082ea3168337d  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -289,7 +289,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: routing-service
-          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:3a4b3c9f26f970e8b067ceaca1752d78a4208a295712ecbc3067fe09bbf1ad82  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:4fcc0179227eb7d2951eb948f57d50ec0b2863f703538adac62bfd15826c0deb  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -339,7 +339,7 @@ spec:
             - { name: POSTGRES_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
             - { name: NATS_URL, value: "nats://labels-nats.skirmshop.svc.cluster.local:4222" }
             - { name: SYNAPSE_API_URL, value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080" }
-            - { name: SYNAPSE_WORKFLOW_VERSION, value: "1.2.10" }
+            - { name: SYNAPSE_WORKFLOW_VERSION, value: "1.2.11" }
             - { name: SHOPIFY_APP_INTERNAL_URL, value: "http://labels-shopify-app.skirmshop.svc.cluster.local:3004" }
             - { name: EXISTING_FULFILLMENT_GUARD_ENABLED, value: "false" }
           envFrom: [{ secretRef: { name: labels-secrets } }]
