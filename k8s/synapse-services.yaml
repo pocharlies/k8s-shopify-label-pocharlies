@@ -147,6 +147,28 @@ spec:
   selector: { app: labels-correos-adapter }
   ports: [{ name: http, port: 3011, targetPort: 3000 }]
 ---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: labels-telegram-bot
+  namespace: skirmshop
+spec:
+  refreshInterval: 1h
+  secretStoreRef: { name: vault-backend, kind: ClusterSecretStore }
+  target:
+    name: labels-telegram-bot
+    creationPolicy: Owner
+    deletionPolicy: Retain
+    template:
+      type: Opaque
+      data:
+        bot_token: "{{ .synapse_bot_token }}"
+  data:
+    - secretKey: synapse_bot_token
+      remoteRef:
+        key: observability/prod/telegram
+        property: synapse_bot_token
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -165,7 +187,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: notification-dispatcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher:20260522-synapse
+          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:c00e317bb6bbf2aff1213013158f96b6b799c0d347d47e3790b474670c08fa53
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -175,6 +197,14 @@ spec:
             - { name: EMAIL_ENABLED, value: "false" }
             - { name: WHATSAPP_ENABLED, value: "false" }
             - { name: TELEGRAM_ENABLED, value: "false" }
+            - { name: LABEL_STORAGE_URL, value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007" }
+            - { name: SHOPIFY_ADMIN_STORE, value: "skirmshop-spain" }
+            - { name: OPS_TELEGRAM_ENABLED, value: "true" }
+            - { name: OPS_TELEGRAM_CHAT_ID, value: "-1003984393379" }
+            - { name: OPS_TELEGRAM_LABELS_THREAD_ID, value: "6921" }
+            - name: OPS_TELEGRAM_BOT_TOKEN
+              valueFrom:
+                secretKeyRef: { name: labels-telegram-bot, key: bot_token }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
             requests: { cpu: 20m, memory: 64Mi }

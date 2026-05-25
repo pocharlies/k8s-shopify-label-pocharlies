@@ -14,8 +14,9 @@ data:
     #   2. createShipment                    → emits CarrierRequested (async)
     #   3. wait for CarrierAccepted          → listen, CE Correlator matches on subject=orderId
     #   4. persistLabel                      → store carrier label bytes to S3/R2
-    #   5. updateShopify                     → fulfillmentCreate GraphQL
-    #   6. complete                          → emit ShipmentCompleted
+    #   5. notifyOpsLabelCreated             → Telegram OP ES topic "etiquetas"
+    #   6. updateShopify                     → fulfillmentCreate GraphQL
+    #   7. complete                          → emit ShipmentCompleted
     #
     # Compensation (DSL v1.0 has no `compensate` verb — we use try/catch + explicit
     # endpoint calls per RESEARCH.md §6.1 C1):
@@ -411,7 +412,49 @@ data:
               - raise:
                   error: { status: 500, detail: label persist failed }
 
-      # -- 5. Update Shopify fulfillment (fulfillmentCreate mutation).
+      # -- 5. Notify Skirmshop ops that the label exists ---------------------
+      # Best-effort: label creation must not fail if Telegram or Shopify
+      # enrichment is temporarily unavailable.
+      - notifyOpsLabelCreated:
+          try:
+            - notifyOpsLabelCreatedCall:
+                call: http
+                with:
+                  method: post
+                  endpoint: http://labels-notification-dispatcher.skirmshop.svc.cluster.local:3007/ops/label-created
+                  headers:
+                    content-type: application/json
+                    x-correlation-id: '${ .correlationId }'
+                  body:
+                    orderId: '${ .orderId }'
+                    shipmentId: '${ .shipmentId }'
+                    correlationId: '${ .correlationId }'
+                    carrier: '${ .routing.decision.carrier }'
+                    trackingNumber: '${ .carrierConfirmed.data.trackingNumber }'
+                    trackingUrl: '${ .carrierConfirmed.data.trackingUrl }'
+                    labelBytesRef: '${ .labelStored.labelBytesRef }'
+                    labelFormat: '${ .labelStored.labelFormat }'
+                output:
+                  as: '${ $input + { opsLabelNotification: $output } }'
+          catch:
+            errors:
+              with:
+                type: all
+            as: err
+            do:
+              - emitOpsLabelNotificationFailed:
+                  emit:
+                    event:
+                      with:
+                        type: com.skirmshop.shipping.opslabelnotificationfailed.v1
+                        source: urn:skirmshop:shipping-app:synapse
+                        subject: '${ .orderId }'
+                        data:
+                          orderId: '${ .orderId }'
+                          shipmentId: '${ .shipmentId }'
+                          reason: '${ $context.err | tostring }'
+
+      # -- 6. Update Shopify fulfillment (fulfillmentCreate mutation).
       - updateShopify:
           try:
             - createShopifyFulfillment:
@@ -453,7 +496,7 @@ data:
               - raise:
                   error: { status: 500, detail: fulfillment failed }
 
-      # -- 6. Happy path — emit ShipmentCompleted ---------------------------
+      # -- 7. Happy path — emit ShipmentCompleted ---------------------------
       - complete:
           emit:
             event:
