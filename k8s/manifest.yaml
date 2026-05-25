@@ -124,6 +124,15 @@ spec:
 # Build from local images before deploying (Phase 8 CI step).
 ---
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: labels-shopify-app-config
+  namespace: skirmshop
+data:
+  EASY_PRINT_PACKING_SLIP_URL_TEMPLATE: "https://admin.shopify.com/store/skirmshop-spain/apps/shopify-order-printer/app/orders/bulk?id={orderNumericId}"
+---
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -160,6 +169,11 @@ spec:
             - { name: CORREOS_ADAPTER_URL, value: "http://labels-correos-adapter.skirmshop.svc.cluster.local:3011" }
             - { name: LABEL_STORAGE_URL, value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007" }
             - { name: CORREOS_ENABLED, value: "false" }
+            - name: EASY_PRINT_PACKING_SLIP_URL_TEMPLATE
+              valueFrom:
+                configMapKeyRef:
+                  name: labels-shopify-app-config
+                  key: EASY_PRINT_PACKING_SLIP_URL_TEMPLATE
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
             requests: { cpu: 50m, memory: 64Mi }
