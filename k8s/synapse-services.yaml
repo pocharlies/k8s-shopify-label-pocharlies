@@ -187,7 +187,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: notification-dispatcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:be2c90854ea6f389cbdec5eafde6240d6ba09619cd9874074bf822977e0c1760
+          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:ed344da611106046b3925f5565ef1ff1ea510e9ea1f42413181f1fb09d9a8483
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
