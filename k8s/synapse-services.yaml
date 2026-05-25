@@ -85,7 +85,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: correos-express-adapter
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:c7f4df711c2ae1189cbfeb74f87e6af291fc019b5a32fc43c4914d97e9d0ef7f
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:b93299c4ccb488a12967953f4671fdd56c66cdc09700426da0c8c70458ee8921
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
