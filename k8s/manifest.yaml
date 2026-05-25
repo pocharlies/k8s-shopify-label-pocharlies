@@ -339,7 +339,7 @@ spec:
             - { name: POSTGRES_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
             - { name: NATS_URL, value: "nats://labels-nats.skirmshop.svc.cluster.local:4222" }
             - { name: SYNAPSE_API_URL, value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080" }
-            - { name: SYNAPSE_WORKFLOW_VERSION, value: "1.2.9" }
+            - { name: SYNAPSE_WORKFLOW_VERSION, value: "1.2.10" }
             - { name: SHOPIFY_APP_INTERNAL_URL, value: "http://labels-shopify-app.skirmshop.svc.cluster.local:3004" }
             - { name: EXISTING_FULFILLMENT_GUARD_ENABLED, value: "false" }
           envFrom: [{ secretRef: { name: labels-secrets } }]

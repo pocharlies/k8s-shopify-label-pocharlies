@@ -307,7 +307,7 @@ spec:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: labels-synapse-workflow-registrar-v129
+  name: labels-synapse-workflow-registrar-v1210
   namespace: skirmshop
 spec:
   backoffLimit: 2

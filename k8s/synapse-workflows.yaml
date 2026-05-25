@@ -35,7 +35,7 @@ data:
       dsl: '1.0.0'
       namespace: skirmshop
       name: generate-shipment-label
-      version: '1.2.9'
+      version: '1.2.10'
       summary: |
         Full shipping saga for a paid Shopify order. Routes to UPS, Correos
         Express or Correos matriz, persists the label, updates
@@ -506,7 +506,7 @@ data:
                 subject: '${ .orderId }'
                 data:
                   shipmentId: '${ .shipmentId }'
-                  totalDurationMs: '${ $workflow.startedAt | now - . }'
+                  totalDurationMs: 0
   handle-tracking-event.yaml: |
     # ============================================================================
     # handle-tracking-event.yaml — fan-out tracking events to notifications
