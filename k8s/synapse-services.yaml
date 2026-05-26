@@ -307,8 +307,11 @@ spec:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: labels-synapse-workflow-registrar-v1211-r1
+  name: labels-synapse-workflow-registrar
   namespace: skirmshop
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
 spec:
   backoffLimit: 2
   template:
