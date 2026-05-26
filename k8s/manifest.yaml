@@ -150,7 +150,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: shopify-app
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:a3aac05e557f043c35b52e66ddc123c6ada97dea492f5f27699082ea3168337d  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:d459df9bec8b387014aeba58bcb66ea1bff3d172537b71b0655296938bf9bcd9  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -289,13 +289,14 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: routing-service
-          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:4fcc0179227eb7d2951eb948f57d50ec0b2863f703538adac62bfd15826c0deb  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:f49cc470b794793332d61ee5ddaee0226e47d884d4780c76f6d5ed088a4bef27  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
             - { name: DATABASE_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
             - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
             - { name: POSTGRES_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
+            - { name: SHOPIFY_SHOP_DOMAIN, value: "ymimst-yh.myshopify.com" }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
             requests: { cpu: 30m, memory: 64Mi }
@@ -330,7 +331,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: saga-launcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:9e820a151e82739df79dbcc742379d34bb47afaaf842f83d6b765257387e6118  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:a783974809859a656582e7bf3b7a9777b57ca6f9b0b2278886594816351371e3  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -341,6 +342,7 @@ spec:
             - { name: SYNAPSE_API_URL, value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080" }
             - { name: SYNAPSE_WORKFLOW_VERSION, value: "1.2.11" }
             - { name: SHOPIFY_APP_INTERNAL_URL, value: "http://labels-shopify-app.skirmshop.svc.cluster.local:3004" }
+            - { name: SHOPIFY_SHOP_DOMAIN, value: "ymimst-yh.myshopify.com" }
             - { name: EXISTING_FULFILLMENT_GUARD_ENABLED, value: "false" }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
@@ -422,7 +424,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: ups-adapter
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:dba8921bcea12e40c6f73dc9020c6f7babaf92916acd0f47405797efc115632c  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:a851253a4c285cd115137f2bd49d15f641f338f062252349392fe3018966c0e8  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
