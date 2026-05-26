@@ -150,7 +150,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: shopify-app
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:d459df9bec8b387014aeba58bcb66ea1bff3d172537b71b0655296938bf9bcd9  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:ae1be4edfa11511c88ab369b3539694f4ad94ae0b6e3d905891779f213d7bae3  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -424,7 +424,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: ups-adapter
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:4030e9a0d0119b7d708f24d19f570fc406c7fcb04455505a9ab2812ed520e1c4  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:98aa16092066327253a7973db95840edfbfed3213130da95209fc2c9b0f097dd  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
