@@ -85,12 +85,14 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: correos-express-adapter
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:b93299c4ccb488a12967953f4671fdd56c66cdc09700426da0c8c70458ee8921
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:b1dc7a6e8bc844ad79274f7a15ee6ac0d55ba86be902d801b48578227b897b18
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
             - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
             - { name: LABEL_STORAGE_URL, value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007" }
+            # CEX integración confirmed canalEntrada=1 for Skirmshop pararEntrega on 2026-05-26.
+            - { name: CEX_PARAR_CANAL_ENTRADA, value: "1" }
           envFrom:
             - { secretRef: { name: labels-secrets } }
             - { secretRef: { name: labels-cex-secrets } }
