@@ -92,6 +92,8 @@ data:
               type: string
             insuredValue:
               type: object
+            quotedTotal:
+              type: object
 
     do:
       # -- 1. Resolve routing ----------------------------------------------
@@ -433,6 +435,10 @@ data:
                     shipmentId: '${ .shipmentId }'
                     correlationId: '${ .correlationId }'
                     carrier: '${ .routing.decision.carrier }'
+                    service: '${ .routing.decision.service }'
+                    serviceName: '${ .shippingMethodTitle }'
+                    labelCost: '${ .quotedTotal }'
+                    insuredValue: '${ .insuredValue }'
                     trackingNumber: '${ .carrierConfirmed.data.trackingNumber }'
                     trackingUrl: '${ .carrierConfirmed.data.trackingUrl }'
                     labelBytesRef: '${ .labelStored.labelBytesRef }'
