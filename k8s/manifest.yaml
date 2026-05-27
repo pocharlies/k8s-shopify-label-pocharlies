@@ -424,7 +424,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: ups-adapter
-          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:036fd4b921d8e3d92793e50577eeee0dcba76bf7de9bda26e6b150084658bf6b  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:14653c38635b15a8f8296fc7310ee1b9260de10f64d079757741225aae2423d9  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
