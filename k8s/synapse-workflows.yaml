@@ -299,7 +299,7 @@ data:
                       destination: '${ .destination }'
                       items: '${ .items }'
                 output:
-                  as: '${ $input }'
+                  as: '${ $input + { carrierConfirmed: { data: $output.carrierAccepted } } }'
           catch:
             errors:
               with:

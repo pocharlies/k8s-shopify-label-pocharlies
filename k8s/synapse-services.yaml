@@ -128,10 +128,11 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: correos-adapter
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter:20260522-synapse
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-adapter@sha256:b527fd64f1c53df1d69c3aa1dbc190f19c7d979b0a8efe10a274ca10d9e088cb
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
+            - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
             - { name: NATS_URL, value: "nats://labels-nats.skirmshop.svc.cluster.local:4222" }
             - { name: LABEL_STORAGE_URL, value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007" }
           envFrom: [{ secretRef: { name: labels-secrets } }]
