@@ -1,0 +1,3448 @@
+# Rate table extraído de "SKIRMSHOP - TARIFAS CEX 2026.pdf" (vigencia
+# 01/01/2026-31/12/2026, cliente 269650001) — adjunto del email de Gerardo
+# Silva De Colle del 2026-04-07 (thread gmail:19d66bbc944cc694).
+#
+# 6 productos × 17 zonas × 8 tiers de peso = 364 filas. El adaptador re-lee
+# este fichero en cada llamada a /rate, así que un kubectl edit cm o un
+# patch desde el admin se ve en segundos sin reinicio del pod.
+#
+# Schema validado contra apps/correos-express-adapter/src/rating.ts
+# CexRateTableEntrySchema. NO editar a mano sin volver a correr
+# generate-cex-rate-table.py — los precios deben venir del PDF contractual.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: labels-cex-rate-table
+  namespace: skirmshop
+  annotations:
+    skirmshop.labels/source: SKIRMSHOP - TARIFAS CEX 2026.pdf
+    skirmshop.labels/loaded-at: "2026-05-28"
+    skirmshop.labels/contract-period: 2026-01-01/2026-12-31
+    skirmshop.labels/client-code: "269650001"
+    skirmshop.labels/source-thread: gmail:19d66bbc944cc694
+data:
+  rate-table.json: |
+    [
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "provincial",
+        "maxWeightKg": 1,
+        "totalCharges": "4.16",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "provincial",
+        "maxWeightKg": 2,
+        "totalCharges": "4.16",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "provincial",
+        "maxWeightKg": 3,
+        "totalCharges": "4.56",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "provincial",
+        "maxWeightKg": 4,
+        "totalCharges": "4.96",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "provincial",
+        "maxWeightKg": 5,
+        "totalCharges": "5.36",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "provincial",
+        "maxWeightKg": 10,
+        "totalCharges": "7.36",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "provincial",
+        "maxWeightKg": 15,
+        "totalCharges": "9.36",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "provincial",
+        "maxWeightKg": 9999,
+        "totalCharges": "9.36",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "0.40",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "regional",
+        "maxWeightKg": 1,
+        "totalCharges": "4.16",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "regional",
+        "maxWeightKg": 2,
+        "totalCharges": "4.16",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "regional",
+        "maxWeightKg": 3,
+        "totalCharges": "4.56",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "regional",
+        "maxWeightKg": 4,
+        "totalCharges": "4.96",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "regional",
+        "maxWeightKg": 5,
+        "totalCharges": "5.36",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "regional",
+        "maxWeightKg": 10,
+        "totalCharges": "7.36",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "regional",
+        "maxWeightKg": 15,
+        "totalCharges": "9.36",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "regional",
+        "maxWeightKg": 9999,
+        "totalCharges": "9.36",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "0.40",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "peninsula",
+        "maxWeightKg": 1,
+        "totalCharges": "4.16",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "peninsula",
+        "maxWeightKg": 2,
+        "totalCharges": "4.16",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "peninsula",
+        "maxWeightKg": 3,
+        "totalCharges": "4.65",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "peninsula",
+        "maxWeightKg": 4,
+        "totalCharges": "5.14",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "peninsula",
+        "maxWeightKg": 5,
+        "totalCharges": "5.63",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "peninsula",
+        "maxWeightKg": 10,
+        "totalCharges": "8.08",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "peninsula",
+        "maxWeightKg": 15,
+        "totalCharges": "10.53",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "peninsula",
+        "maxWeightKg": 9999,
+        "totalCharges": "10.53",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "0.49",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 1,
+        "totalCharges": "4.16",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 2,
+        "totalCharges": "4.16",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 3,
+        "totalCharges": "4.65",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 4,
+        "totalCharges": "5.14",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 5,
+        "totalCharges": "5.63",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 10,
+        "totalCharges": "8.08",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 15,
+        "totalCharges": "10.53",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 9999,
+        "totalCharges": "10.53",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "0.49",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "baleares_minor",
+        "maxWeightKg": 1,
+        "totalCharges": "7.50",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "baleares_minor",
+        "maxWeightKg": 2,
+        "totalCharges": "8.61",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "baleares_minor",
+        "maxWeightKg": 3,
+        "totalCharges": "10.15",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "baleares_minor",
+        "maxWeightKg": 4,
+        "totalCharges": "11.00",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "baleares_minor",
+        "maxWeightKg": 5,
+        "totalCharges": "11.84",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "baleares_minor",
+        "maxWeightKg": 10,
+        "totalCharges": "16.09",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "baleares_minor",
+        "maxWeightKg": 15,
+        "totalCharges": "20.99",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "baleares_minor",
+        "maxWeightKg": 9999,
+        "totalCharges": "20.99",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "0.81",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "baleares",
+        "maxWeightKg": 1,
+        "totalCharges": "6.42",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "baleares",
+        "maxWeightKg": 2,
+        "totalCharges": "6.42",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "baleares",
+        "maxWeightKg": 3,
+        "totalCharges": "7.44",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "baleares",
+        "maxWeightKg": 4,
+        "totalCharges": "8.46",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "baleares",
+        "maxWeightKg": 5,
+        "totalCharges": "9.48",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "baleares",
+        "maxWeightKg": 10,
+        "totalCharges": "14.58",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "baleares",
+        "maxWeightKg": 15,
+        "totalCharges": "19.68",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "baleares",
+        "maxWeightKg": 9999,
+        "totalCharges": "19.68",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "1.02",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 1,
+        "totalCharges": "10.28",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 2,
+        "totalCharges": "14.97",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 3,
+        "totalCharges": "19.21",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 4,
+        "totalCharges": "23.47",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 5,
+        "totalCharges": "27.73",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 10,
+        "totalCharges": "49.32",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 15,
+        "totalCharges": "71.06",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 9999,
+        "totalCharges": "71.06",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "4.11",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "canarias_minor",
+        "maxWeightKg": 1,
+        "totalCharges": "11.30",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "canarias_minor",
+        "maxWeightKg": 2,
+        "totalCharges": "16.47",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "canarias_minor",
+        "maxWeightKg": 3,
+        "totalCharges": "21.14",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "canarias_minor",
+        "maxWeightKg": 4,
+        "totalCharges": "25.84",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "canarias_minor",
+        "maxWeightKg": 5,
+        "totalCharges": "30.50",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "canarias_minor",
+        "maxWeightKg": 10,
+        "totalCharges": "54.25",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "canarias_minor",
+        "maxWeightKg": 15,
+        "totalCharges": "78.18",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "canarias_minor",
+        "maxWeightKg": 9999,
+        "totalCharges": "78.18",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "4.52",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "canarias",
+        "maxWeightKg": 1,
+        "totalCharges": "6.42",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "canarias",
+        "maxWeightKg": 2,
+        "totalCharges": "6.42",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "canarias",
+        "maxWeightKg": 3,
+        "totalCharges": "7.65",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "canarias",
+        "maxWeightKg": 4,
+        "totalCharges": "8.88",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "canarias",
+        "maxWeightKg": 5,
+        "totalCharges": "10.11",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "canarias",
+        "maxWeightKg": 10,
+        "totalCharges": "16.26",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "canarias",
+        "maxWeightKg": 15,
+        "totalCharges": "22.41",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "canarias",
+        "maxWeightKg": 9999,
+        "totalCharges": "22.41",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "1.23",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "portugal",
+        "maxWeightKg": 1,
+        "totalCharges": "10.03",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "portugal",
+        "maxWeightKg": 2,
+        "totalCharges": "10.03",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "portugal",
+        "maxWeightKg": 3,
+        "totalCharges": "11.95",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "portugal",
+        "maxWeightKg": 4,
+        "totalCharges": "13.87",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "portugal",
+        "maxWeightKg": 5,
+        "totalCharges": "15.79",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "portugal",
+        "maxWeightKg": 10,
+        "totalCharges": "25.39",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "portugal",
+        "maxWeightKg": 15,
+        "totalCharges": "34.99",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "portugal",
+        "maxWeightKg": 9999,
+        "totalCharges": "34.99",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "1.92",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "azores",
+        "maxWeightKg": 1,
+        "totalCharges": "43.67",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "azores",
+        "maxWeightKg": 2,
+        "totalCharges": "44.94",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "azores",
+        "maxWeightKg": 3,
+        "totalCharges": "47.08",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "azores",
+        "maxWeightKg": 4,
+        "totalCharges": "49.79",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "azores",
+        "maxWeightKg": 5,
+        "totalCharges": "52.80",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "azores",
+        "maxWeightKg": 10,
+        "totalCharges": "74.22",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "azores",
+        "maxWeightKg": 15,
+        "totalCharges": "91.73",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "azores",
+        "maxWeightKg": 9999,
+        "totalCharges": "91.73",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "6.05",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "madeira",
+        "maxWeightKg": 1,
+        "totalCharges": "42.44",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "madeira",
+        "maxWeightKg": 2,
+        "totalCharges": "42.91",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "madeira",
+        "maxWeightKg": 3,
+        "totalCharges": "44.18",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "madeira",
+        "maxWeightKg": 4,
+        "totalCharges": "46.35",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "madeira",
+        "maxWeightKg": 5,
+        "totalCharges": "48.77",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "madeira",
+        "maxWeightKg": 10,
+        "totalCharges": "68.04",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "madeira",
+        "maxWeightKg": 15,
+        "totalCharges": "83.45",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "madeira",
+        "maxWeightKg": 9999,
+        "totalCharges": "83.45",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "5.97",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "mallorca",
+        "maxWeightKg": 1,
+        "totalCharges": "7.12",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "mallorca",
+        "maxWeightKg": 2,
+        "totalCharges": "8.06",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "mallorca",
+        "maxWeightKg": 3,
+        "totalCharges": "9.45",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "mallorca",
+        "maxWeightKg": 4,
+        "totalCharges": "10.13",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "mallorca",
+        "maxWeightKg": 5,
+        "totalCharges": "10.80",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "mallorca",
+        "maxWeightKg": 10,
+        "totalCharges": "14.20",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "mallorca",
+        "maxWeightKg": 15,
+        "totalCharges": "17.60",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "mallorca",
+        "maxWeightKg": 9999,
+        "totalCharges": "17.60",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "0.64",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "special",
+        "maxWeightKg": 1,
+        "totalCharges": "25.49",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "special",
+        "maxWeightKg": 2,
+        "totalCharges": "25.49",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "special",
+        "maxWeightKg": 3,
+        "totalCharges": "29.35",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "special",
+        "maxWeightKg": 4,
+        "totalCharges": "33.21",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "special",
+        "maxWeightKg": 5,
+        "totalCharges": "37.07",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "special",
+        "maxWeightKg": 10,
+        "totalCharges": "56.37",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "special",
+        "maxWeightKg": 15,
+        "totalCharges": "75.67",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqEcommerce",
+        "zone": "special",
+        "maxWeightKg": 9999,
+        "totalCharges": "75.67",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "3.86",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "EPAQ24",
+        "zone": "provincial",
+        "maxWeightKg": 2,
+        "totalCharges": "4.24",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "EPAQ24",
+        "zone": "provincial",
+        "maxWeightKg": 9999,
+        "totalCharges": "4.24",
+        "baseWeightKg": 2,
+        "additionalKgCharge": "0.41",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "EPAQ24",
+        "zone": "regional",
+        "maxWeightKg": 2,
+        "totalCharges": "4.24",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "EPAQ24",
+        "zone": "regional",
+        "maxWeightKg": 9999,
+        "totalCharges": "4.24",
+        "baseWeightKg": 2,
+        "additionalKgCharge": "0.41",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "EPAQ24",
+        "zone": "peninsula",
+        "maxWeightKg": 2,
+        "totalCharges": "4.24",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "EPAQ24",
+        "zone": "peninsula",
+        "maxWeightKg": 9999,
+        "totalCharges": "4.24",
+        "baseWeightKg": 2,
+        "additionalKgCharge": "0.50",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "EPAQ24",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 2,
+        "totalCharges": "4.24",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "EPAQ24",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 9999,
+        "totalCharges": "4.24",
+        "baseWeightKg": 2,
+        "additionalKgCharge": "0.50",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "EPAQ24",
+        "zone": "baleares",
+        "maxWeightKg": 2,
+        "totalCharges": "6.55",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "EPAQ24",
+        "zone": "baleares",
+        "maxWeightKg": 9999,
+        "totalCharges": "6.55",
+        "baseWeightKg": 2,
+        "additionalKgCharge": "1.04",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "EPAQ24",
+        "zone": "canarias",
+        "maxWeightKg": 2,
+        "totalCharges": "6.55",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "EPAQ24",
+        "zone": "canarias",
+        "maxWeightKg": 9999,
+        "totalCharges": "6.55",
+        "baseWeightKg": 2,
+        "additionalKgCharge": "1.25",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "EPAQ24",
+        "zone": "special",
+        "maxWeightKg": 2,
+        "totalCharges": "26.00",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "EPAQ24",
+        "zone": "special",
+        "maxWeightKg": 9999,
+        "totalCharges": "26.00",
+        "baseWeightKg": 2,
+        "additionalKgCharge": "3.94",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ24",
+        "zone": "provincial",
+        "maxWeightKg": 2,
+        "totalCharges": "4.24",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ24",
+        "zone": "provincial",
+        "maxWeightKg": 9999,
+        "totalCharges": "4.24",
+        "baseWeightKg": 2,
+        "additionalKgCharge": "0.41",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ24",
+        "zone": "regional",
+        "maxWeightKg": 2,
+        "totalCharges": "4.24",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ24",
+        "zone": "regional",
+        "maxWeightKg": 9999,
+        "totalCharges": "4.24",
+        "baseWeightKg": 2,
+        "additionalKgCharge": "0.41",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ24",
+        "zone": "peninsula",
+        "maxWeightKg": 2,
+        "totalCharges": "4.24",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ24",
+        "zone": "peninsula",
+        "maxWeightKg": 9999,
+        "totalCharges": "4.24",
+        "baseWeightKg": 2,
+        "additionalKgCharge": "0.50",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ24",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 2,
+        "totalCharges": "4.24",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ24",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 9999,
+        "totalCharges": "4.24",
+        "baseWeightKg": 2,
+        "additionalKgCharge": "0.50",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ24",
+        "zone": "baleares",
+        "maxWeightKg": 2,
+        "totalCharges": "6.55",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ24",
+        "zone": "baleares",
+        "maxWeightKg": 9999,
+        "totalCharges": "6.55",
+        "baseWeightKg": 2,
+        "additionalKgCharge": "1.04",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ24",
+        "zone": "canarias",
+        "maxWeightKg": 2,
+        "totalCharges": "6.55",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ24",
+        "zone": "canarias",
+        "maxWeightKg": 9999,
+        "totalCharges": "6.55",
+        "baseWeightKg": 2,
+        "additionalKgCharge": "1.25",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ24",
+        "zone": "portugal",
+        "maxWeightKg": 2,
+        "totalCharges": "10.23",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ24",
+        "zone": "portugal",
+        "maxWeightKg": 9999,
+        "totalCharges": "10.23",
+        "baseWeightKg": 2,
+        "additionalKgCharge": "1.96",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ24",
+        "zone": "ceuta_melilla",
+        "maxWeightKg": 2,
+        "totalCharges": "18.55",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ24",
+        "zone": "ceuta_melilla",
+        "maxWeightKg": 9999,
+        "totalCharges": "18.55",
+        "baseWeightKg": 2,
+        "additionalKgCharge": "2.26",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ24",
+        "zone": "andorra",
+        "maxWeightKg": 2,
+        "totalCharges": "16.95",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ24",
+        "zone": "andorra",
+        "maxWeightKg": 9999,
+        "totalCharges": "16.95",
+        "baseWeightKg": 2,
+        "additionalKgCharge": "1.95",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ24",
+        "zone": "gibraltar",
+        "maxWeightKg": 2,
+        "totalCharges": "45.39",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ24",
+        "zone": "gibraltar",
+        "maxWeightKg": 9999,
+        "totalCharges": "45.39",
+        "baseWeightKg": 2,
+        "additionalKgCharge": "1.15",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ24",
+        "zone": "special",
+        "maxWeightKg": 2,
+        "totalCharges": "26.00",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ24",
+        "zone": "special",
+        "maxWeightKg": 9999,
+        "totalCharges": "26.00",
+        "baseWeightKg": 2,
+        "additionalKgCharge": "3.94",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "provincial",
+        "maxWeightKg": 1,
+        "totalCharges": "5.94",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "provincial",
+        "maxWeightKg": 2,
+        "totalCharges": "6.27",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "provincial",
+        "maxWeightKg": 3,
+        "totalCharges": "6.60",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "provincial",
+        "maxWeightKg": 4,
+        "totalCharges": "6.94",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "provincial",
+        "maxWeightKg": 5,
+        "totalCharges": "7.16",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "provincial",
+        "maxWeightKg": 10,
+        "totalCharges": "9.36",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "provincial",
+        "maxWeightKg": 15,
+        "totalCharges": "11.39",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "provincial",
+        "maxWeightKg": 9999,
+        "totalCharges": "11.39",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "0.41",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "regional",
+        "maxWeightKg": 1,
+        "totalCharges": "6.81",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "regional",
+        "maxWeightKg": 2,
+        "totalCharges": "7.15",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "regional",
+        "maxWeightKg": 3,
+        "totalCharges": "7.48",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "regional",
+        "maxWeightKg": 4,
+        "totalCharges": "7.82",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "regional",
+        "maxWeightKg": 5,
+        "totalCharges": "8.05",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "regional",
+        "maxWeightKg": 10,
+        "totalCharges": "10.31",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "regional",
+        "maxWeightKg": 15,
+        "totalCharges": "12.58",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "regional",
+        "maxWeightKg": 9999,
+        "totalCharges": "12.58",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "0.45",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "peninsula",
+        "maxWeightKg": 1,
+        "totalCharges": "6.99",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "peninsula",
+        "maxWeightKg": 2,
+        "totalCharges": "7.36",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "peninsula",
+        "maxWeightKg": 3,
+        "totalCharges": "7.69",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "peninsula",
+        "maxWeightKg": 4,
+        "totalCharges": "8.06",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "peninsula",
+        "maxWeightKg": 5,
+        "totalCharges": "8.29",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "peninsula",
+        "maxWeightKg": 10,
+        "totalCharges": "10.61",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "peninsula",
+        "maxWeightKg": 15,
+        "totalCharges": "12.90",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "peninsula",
+        "maxWeightKg": 9999,
+        "totalCharges": "12.90",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "0.52",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 1,
+        "totalCharges": "7.43",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 2,
+        "totalCharges": "7.78",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 3,
+        "totalCharges": "8.14",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 4,
+        "totalCharges": "8.52",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 5,
+        "totalCharges": "8.80",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 10,
+        "totalCharges": "10.93",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 15,
+        "totalCharges": "13.23",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 9999,
+        "totalCharges": "13.23",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "0.65",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "baleares_minor",
+        "maxWeightKg": 1,
+        "totalCharges": "10.61",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "baleares_minor",
+        "maxWeightKg": 2,
+        "totalCharges": "12.16",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "baleares_minor",
+        "maxWeightKg": 3,
+        "totalCharges": "14.35",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "baleares_minor",
+        "maxWeightKg": 4,
+        "totalCharges": "15.57",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "baleares_minor",
+        "maxWeightKg": 5,
+        "totalCharges": "16.76",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "baleares_minor",
+        "maxWeightKg": 10,
+        "totalCharges": "22.76",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "baleares_minor",
+        "maxWeightKg": 15,
+        "totalCharges": "29.70",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "baleares_minor",
+        "maxWeightKg": 9999,
+        "totalCharges": "29.70",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "4.81",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 1,
+        "totalCharges": "10.60",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 2,
+        "totalCharges": "15.42",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 3,
+        "totalCharges": "19.82",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 4,
+        "totalCharges": "24.20",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 5,
+        "totalCharges": "28.57",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 10,
+        "totalCharges": "50.85",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 15,
+        "totalCharges": "73.26",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 9999,
+        "totalCharges": "73.26",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "3.39",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "mallorca",
+        "maxWeightKg": 1,
+        "totalCharges": "10.07",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "mallorca",
+        "maxWeightKg": 2,
+        "totalCharges": "11.39",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "mallorca",
+        "maxWeightKg": 3,
+        "totalCharges": "13.35",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "mallorca",
+        "maxWeightKg": 4,
+        "totalCharges": "14.31",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "mallorca",
+        "maxWeightKg": 5,
+        "totalCharges": "15.28",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "mallorca",
+        "maxWeightKg": 10,
+        "totalCharges": "20.09",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "mallorca",
+        "maxWeightKg": 15,
+        "totalCharges": "24.90",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PAQ14",
+        "zone": "mallorca",
+        "maxWeightKg": 9999,
+        "totalCharges": "24.90",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "3.25",
+        "currency": "EUR",
+        "transitDays": 1
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "provincial",
+        "maxWeightKg": 1,
+        "totalCharges": "3.95",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "provincial",
+        "maxWeightKg": 2,
+        "totalCharges": "3.95",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "provincial",
+        "maxWeightKg": 3,
+        "totalCharges": "4.33",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "provincial",
+        "maxWeightKg": 4,
+        "totalCharges": "4.71",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "provincial",
+        "maxWeightKg": 5,
+        "totalCharges": "5.09",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "provincial",
+        "maxWeightKg": 10,
+        "totalCharges": "6.99",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "provincial",
+        "maxWeightKg": 15,
+        "totalCharges": "8.90",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "provincial",
+        "maxWeightKg": 9999,
+        "totalCharges": "8.90",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "0.38",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "regional",
+        "maxWeightKg": 1,
+        "totalCharges": "3.95",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "regional",
+        "maxWeightKg": 2,
+        "totalCharges": "3.95",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "regional",
+        "maxWeightKg": 3,
+        "totalCharges": "4.33",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "regional",
+        "maxWeightKg": 4,
+        "totalCharges": "4.71",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "regional",
+        "maxWeightKg": 5,
+        "totalCharges": "5.09",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "regional",
+        "maxWeightKg": 10,
+        "totalCharges": "6.99",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "regional",
+        "maxWeightKg": 15,
+        "totalCharges": "8.90",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "regional",
+        "maxWeightKg": 9999,
+        "totalCharges": "8.90",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "0.38",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "peninsula",
+        "maxWeightKg": 1,
+        "totalCharges": "3.95",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "peninsula",
+        "maxWeightKg": 2,
+        "totalCharges": "3.95",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "peninsula",
+        "maxWeightKg": 3,
+        "totalCharges": "4.41",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "peninsula",
+        "maxWeightKg": 4,
+        "totalCharges": "4.87",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "peninsula",
+        "maxWeightKg": 5,
+        "totalCharges": "5.33",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "peninsula",
+        "maxWeightKg": 10,
+        "totalCharges": "7.64",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "peninsula",
+        "maxWeightKg": 15,
+        "totalCharges": "9.95",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "peninsula",
+        "maxWeightKg": 9999,
+        "totalCharges": "9.95",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "0.47",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 1,
+        "totalCharges": "3.95",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 2,
+        "totalCharges": "3.95",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 3,
+        "totalCharges": "4.41",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 4,
+        "totalCharges": "4.87",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 5,
+        "totalCharges": "5.33",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 10,
+        "totalCharges": "7.64",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 15,
+        "totalCharges": "9.95",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "peninsula_plus",
+        "maxWeightKg": 9999,
+        "totalCharges": "9.95",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "0.47",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "baleares_minor",
+        "maxWeightKg": 1,
+        "totalCharges": "7.13",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "baleares_minor",
+        "maxWeightKg": 2,
+        "totalCharges": "8.18",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "baleares_minor",
+        "maxWeightKg": 3,
+        "totalCharges": "9.64",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "baleares_minor",
+        "maxWeightKg": 4,
+        "totalCharges": "10.45",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "baleares_minor",
+        "maxWeightKg": 5,
+        "totalCharges": "11.25",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "baleares_minor",
+        "maxWeightKg": 10,
+        "totalCharges": "15.29",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "baleares_minor",
+        "maxWeightKg": 15,
+        "totalCharges": "19.94",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "baleares_minor",
+        "maxWeightKg": 9999,
+        "totalCharges": "19.94",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "0.77",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "baleares",
+        "maxWeightKg": 1,
+        "totalCharges": "6.10",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "baleares",
+        "maxWeightKg": 2,
+        "totalCharges": "6.10",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "baleares",
+        "maxWeightKg": 3,
+        "totalCharges": "7.08",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "baleares",
+        "maxWeightKg": 4,
+        "totalCharges": "8.05",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "baleares",
+        "maxWeightKg": 5,
+        "totalCharges": "9.03",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "baleares",
+        "maxWeightKg": 10,
+        "totalCharges": "13.88",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "baleares",
+        "maxWeightKg": 15,
+        "totalCharges": "18.74",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "baleares",
+        "maxWeightKg": 9999,
+        "totalCharges": "18.74",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "0.97",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 1,
+        "totalCharges": "9.77",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 2,
+        "totalCharges": "14.22",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 3,
+        "totalCharges": "18.25",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 4,
+        "totalCharges": "22.30",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 5,
+        "totalCharges": "26.34",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 10,
+        "totalCharges": "46.85",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 15,
+        "totalCharges": "67.51",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 9999,
+        "totalCharges": "67.51",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "3.90",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "canarias_minor",
+        "maxWeightKg": 1,
+        "totalCharges": "10.74",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "canarias_minor",
+        "maxWeightKg": 2,
+        "totalCharges": "15.65",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "canarias_minor",
+        "maxWeightKg": 3,
+        "totalCharges": "20.08",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "canarias_minor",
+        "maxWeightKg": 4,
+        "totalCharges": "24.55",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "canarias_minor",
+        "maxWeightKg": 5,
+        "totalCharges": "28.98",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "canarias_minor",
+        "maxWeightKg": 10,
+        "totalCharges": "51.54",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "canarias_minor",
+        "maxWeightKg": 15,
+        "totalCharges": "74.27",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "canarias_minor",
+        "maxWeightKg": 9999,
+        "totalCharges": "74.27",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "4.29",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "canarias",
+        "maxWeightKg": 1,
+        "totalCharges": "6.10",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "canarias",
+        "maxWeightKg": 2,
+        "totalCharges": "6.10",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "canarias",
+        "maxWeightKg": 3,
+        "totalCharges": "7.28",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "canarias",
+        "maxWeightKg": 4,
+        "totalCharges": "8.45",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "canarias",
+        "maxWeightKg": 5,
+        "totalCharges": "9.62",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "canarias",
+        "maxWeightKg": 10,
+        "totalCharges": "15.49",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "canarias",
+        "maxWeightKg": 15,
+        "totalCharges": "21.35",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "canarias",
+        "maxWeightKg": 9999,
+        "totalCharges": "21.35",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "1.17",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "portugal",
+        "maxWeightKg": 1,
+        "totalCharges": "9.53",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "portugal",
+        "maxWeightKg": 2,
+        "totalCharges": "9.53",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "portugal",
+        "maxWeightKg": 3,
+        "totalCharges": "11.35",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "portugal",
+        "maxWeightKg": 4,
+        "totalCharges": "13.18",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "portugal",
+        "maxWeightKg": 5,
+        "totalCharges": "15.00",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "portugal",
+        "maxWeightKg": 10,
+        "totalCharges": "24.12",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "portugal",
+        "maxWeightKg": 15,
+        "totalCharges": "33.24",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "portugal",
+        "maxWeightKg": 9999,
+        "totalCharges": "33.24",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "1.82",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "azores",
+        "maxWeightKg": 1,
+        "totalCharges": "41.49",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "azores",
+        "maxWeightKg": 2,
+        "totalCharges": "42.69",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "azores",
+        "maxWeightKg": 3,
+        "totalCharges": "44.73",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "azores",
+        "maxWeightKg": 4,
+        "totalCharges": "47.30",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "azores",
+        "maxWeightKg": 5,
+        "totalCharges": "50.16",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "azores",
+        "maxWeightKg": 10,
+        "totalCharges": "64.64",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "azores",
+        "maxWeightKg": 15,
+        "totalCharges": "87.13",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "azores",
+        "maxWeightKg": 9999,
+        "totalCharges": "87.13",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "5.75",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "madeira",
+        "maxWeightKg": 1,
+        "totalCharges": "40.32",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "madeira",
+        "maxWeightKg": 2,
+        "totalCharges": "40.76",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "madeira",
+        "maxWeightKg": 3,
+        "totalCharges": "41.97",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "madeira",
+        "maxWeightKg": 4,
+        "totalCharges": "44.03",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "madeira",
+        "maxWeightKg": 5,
+        "totalCharges": "46.33",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "madeira",
+        "maxWeightKg": 10,
+        "totalCharges": "64.64",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "madeira",
+        "maxWeightKg": 15,
+        "totalCharges": "79.28",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "madeira",
+        "maxWeightKg": 9999,
+        "totalCharges": "79.28",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "5.67",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "mallorca",
+        "maxWeightKg": 1,
+        "totalCharges": "6.76",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "mallorca",
+        "maxWeightKg": 2,
+        "totalCharges": "7.66",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "mallorca",
+        "maxWeightKg": 3,
+        "totalCharges": "8.98",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "mallorca",
+        "maxWeightKg": 4,
+        "totalCharges": "9.62",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "mallorca",
+        "maxWeightKg": 5,
+        "totalCharges": "10.26",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "mallorca",
+        "maxWeightKg": 10,
+        "totalCharges": "13.49",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "mallorca",
+        "maxWeightKg": 15,
+        "totalCharges": "16.72",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "mallorca",
+        "maxWeightKg": 9999,
+        "totalCharges": "16.72",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "0.61",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "special",
+        "maxWeightKg": 1,
+        "totalCharges": "24.22",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "special",
+        "maxWeightKg": 2,
+        "totalCharges": "24.22",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "special",
+        "maxWeightKg": 3,
+        "totalCharges": "27.88",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "special",
+        "maxWeightKg": 4,
+        "totalCharges": "31.55",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "special",
+        "maxWeightKg": 5,
+        "totalCharges": "35.22",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "special",
+        "maxWeightKg": 10,
+        "totalCharges": "53.56",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "special",
+        "maxWeightKg": 15,
+        "totalCharges": "71.91",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "PaqPunto",
+        "zone": "special",
+        "maxWeightKg": 9999,
+        "totalCharges": "71.91",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "3.67",
+        "currency": "EUR",
+        "transitDays": 2
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "baleares_minor",
+        "maxWeightKg": 1,
+        "totalCharges": "7.65",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "baleares_minor",
+        "maxWeightKg": 2,
+        "totalCharges": "8.78",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "baleares_minor",
+        "maxWeightKg": 3,
+        "totalCharges": "10.35",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "baleares_minor",
+        "maxWeightKg": 4,
+        "totalCharges": "11.22",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "baleares_minor",
+        "maxWeightKg": 5,
+        "totalCharges": "12.08",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "baleares_minor",
+        "maxWeightKg": 10,
+        "totalCharges": "16.41",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "baleares_minor",
+        "maxWeightKg": 15,
+        "totalCharges": "21.41",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "baleares_minor",
+        "maxWeightKg": 9999,
+        "totalCharges": "21.41",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "0.83",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 1,
+        "totalCharges": "10.49",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 2,
+        "totalCharges": "15.27",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 3,
+        "totalCharges": "19.59",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 4,
+        "totalCharges": "23.94",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 5,
+        "totalCharges": "28.28",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 10,
+        "totalCharges": "50.31",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 15,
+        "totalCharges": "72.48",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "canarias_tnf_lpa",
+        "maxWeightKg": 9999,
+        "totalCharges": "72.48",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "4.19",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "canarias_minor",
+        "maxWeightKg": 1,
+        "totalCharges": "11.53",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "canarias_minor",
+        "maxWeightKg": 2,
+        "totalCharges": "16.80",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "canarias_minor",
+        "maxWeightKg": 3,
+        "totalCharges": "21.56",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "canarias_minor",
+        "maxWeightKg": 4,
+        "totalCharges": "26.36",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "canarias_minor",
+        "maxWeightKg": 5,
+        "totalCharges": "31.11",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "canarias_minor",
+        "maxWeightKg": 10,
+        "totalCharges": "55.34",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "canarias_minor",
+        "maxWeightKg": 15,
+        "totalCharges": "79.74",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "canarias_minor",
+        "maxWeightKg": 9999,
+        "totalCharges": "79.74",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "4.61",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "azores",
+        "maxWeightKg": 1,
+        "totalCharges": "44.54",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "azores",
+        "maxWeightKg": 2,
+        "totalCharges": "45.84",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "azores",
+        "maxWeightKg": 3,
+        "totalCharges": "48.02",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "azores",
+        "maxWeightKg": 4,
+        "totalCharges": "50.79",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "azores",
+        "maxWeightKg": 5,
+        "totalCharges": "53.86",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "azores",
+        "maxWeightKg": 10,
+        "totalCharges": "75.70",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "azores",
+        "maxWeightKg": 15,
+        "totalCharges": "93.55",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "azores",
+        "maxWeightKg": 9999,
+        "totalCharges": "93.55",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "6.17",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "madeira",
+        "maxWeightKg": 1,
+        "totalCharges": "43.29",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "madeira",
+        "maxWeightKg": 2,
+        "totalCharges": "43.77",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "madeira",
+        "maxWeightKg": 3,
+        "totalCharges": "45.06",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "madeira",
+        "maxWeightKg": 4,
+        "totalCharges": "47.28",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "madeira",
+        "maxWeightKg": 5,
+        "totalCharges": "49.75",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "madeira",
+        "maxWeightKg": 10,
+        "totalCharges": "69.40",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "madeira",
+        "maxWeightKg": 15,
+        "totalCharges": "85.12",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "madeira",
+        "maxWeightKg": 9999,
+        "totalCharges": "85.12",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "6.09",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "mallorca",
+        "maxWeightKg": 1,
+        "totalCharges": "7.26",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "mallorca",
+        "maxWeightKg": 2,
+        "totalCharges": "8.22",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "mallorca",
+        "maxWeightKg": 3,
+        "totalCharges": "9.64",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "mallorca",
+        "maxWeightKg": 4,
+        "totalCharges": "10.33",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "mallorca",
+        "maxWeightKg": 5,
+        "totalCharges": "11.02",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "mallorca",
+        "maxWeightKg": 10,
+        "totalCharges": "14.48",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "mallorca",
+        "maxWeightKg": 15,
+        "totalCharges": "17.95",
+        "currency": "EUR",
+        "transitDays": 5
+      },
+      {
+        "contractScope": "direct",
+        "service": "26",
+        "zone": "mallorca",
+        "maxWeightKg": 9999,
+        "totalCharges": "17.95",
+        "baseWeightKg": 15,
+        "additionalKgCharge": "0.65",
+        "currency": "EUR",
+        "transitDays": 5
+      }
+    ]
+---
+# Recargos contractuales CEX. Editables desde el admin (panel Tarifas →
+# Recargos). El fuel surcharge se actualiza mensualmente por CEX (Real
+# Decreto-ley 7/2026 + 9/2026, art.38 Ley 15/2009). El resto sale del PDF
+# contractual 2026.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: labels-cex-surcharges
+  namespace: skirmshop
+  annotations:
+    skirmshop.labels/loaded-at: "2026-05-28"
+    skirmshop.labels/fuel-source: "CEX email 2026-05-27"
+data:
+  surcharges.json: |
+    {
+      "fuel_surcharge_pct": 4.06,
+      "fuel_surcharge_effective_from": "2026-05-27",
+      "fuel_surcharge_source": "CEX email 2026-05-27 - Real Decreto-ley 7/2026 + 9/2026",
+      "portugal_supplement_eur": 0.3,
+      "dua_importacion_canarias_eur": 16.0,
+      "dua_exportacion_alto_valor_eur": 22.0,
+      "dua_exportacion_bajo_valor_eur": 20.85,
+      "dua_exportacion_origen_canarias_eur": 6.85,
+      "dua_andorra_gibraltar_eur": 24.5,
+      "t2lf_eur": 6.0
+    }
+

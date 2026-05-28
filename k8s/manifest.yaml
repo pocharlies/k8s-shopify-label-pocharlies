@@ -148,6 +148,11 @@ spec:
       nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
       tolerations:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
+      # Bound to the labels-shopify-app SA (defined below) so the admin
+      # "Tarifas" page can patch labels-cex-surcharges. Without this the
+      # pod runs with the default SA which has no configmap permissions
+      # and the PATCH endpoint returns 500 K8S_PATCH_FAILED.
+      serviceAccountName: labels-shopify-app
       containers:
         - name: shopify-app
           image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:c94665573448cf75c6b1ba8a49f9d8c5e66212ecf8c160db2d31e3113eddea80  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
@@ -189,6 +194,44 @@ metadata: { name: labels-shopify-app, namespace: skirmshop }
 spec:
   selector: { app: labels-shopify-app }
   ports: [{ name: http, port: 3004, targetPort: 3000 }]
+---
+# RBAC for the Tarifas admin page. The shopify-app pod uses its in-pod
+# ServiceAccount token to PATCH labels-cex-surcharges (fuel rate, DUA,
+# Portugal supplement) and GET annotations from labels-cex-rate-table
+# (loaded-at, contract-period, source) — both scoped to this namespace,
+# both resource-named, no wildcard.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: labels-shopify-app
+  namespace: skirmshop
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: labels-shopify-app-cex-config
+  namespace: skirmshop
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames:
+      - labels-cex-rate-table
+      - labels-cex-surcharges
+    verbs: ["get", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: labels-shopify-app-cex-config
+  namespace: skirmshop
+subjects:
+  - kind: ServiceAccount
+    name: labels-shopify-app
+    namespace: skirmshop
+roleRef:
+  kind: Role
+  name: labels-shopify-app-cex-config
+  apiGroup: rbac.authorization.k8s.io
 ---
 ---
 apiVersion: apps/v1
