@@ -205,6 +205,10 @@ kind: ServiceAccount
 metadata:
   name: labels-shopify-app
   namespace: skirmshop
+# Inherit the Harbor pull secret from the default SA — without it kubelet
+# fails to pull the shopify-app image with "no basic auth credentials".
+imagePullSecrets:
+  - name: harbor-pull
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
