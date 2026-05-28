@@ -1,0 +1,63 @@
+# Weekly job that refreshes labels-vat-rates from Shopify Admin REST.
+#
+# Sundays 03:00 UTC (low-traffic window; checkout VAT changes for the
+# week land before Monday morning sales). The job is just a curl POST to
+# the shopify-app's internal endpoint — all the real logic (Shopify auth,
+# /countries.json fetch, ConfigMap patch via in-pod SA) lives inside
+# shopify-app so the job stays a 5-line bash script.
+#
+# Manual run for hot updates:
+#   kubectl create job -n skirmshop --from=cronjob/labels-vat-sync vat-sync-$(date +%s)
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: labels-vat-sync
+  namespace: skirmshop
+spec:
+  schedule: "0 3 * * 0"
+  timeZone: Etc/UTC
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 4
+  failedJobsHistoryLimit: 4
+  startingDeadlineSeconds: 600
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      ttlSecondsAfterFinished: 604800   # 7 days
+      template:
+        metadata:
+          labels:
+            app: labels-vat-sync
+        spec:
+          restartPolicy: Never
+          nodeSelector: { role: edge, kubernetes.io/arch: amd64 }
+          tolerations:
+            - { key: role, operator: Equal, value: edge, effect: NoSchedule }
+          containers:
+            - name: trigger
+              image: curlimages/curl:8.13.0
+              command:
+                - sh
+                - -c
+                - |
+                  set -eu
+                  ENDPOINT='http://labels-shopify-app.skirmshop.svc.cluster.local:3004/api/internal/sync-vat-rates'
+                  echo "[vat-sync] POST $ENDPOINT"
+                  HTTP_CODE=$(curl -sS -o /tmp/resp.json -w "%{http_code}" \
+                    -X POST -H "Content-Type: application/json" "$ENDPOINT" || true)
+                  echo "[vat-sync] HTTP $HTTP_CODE"
+                  cat /tmp/resp.json || true
+                  echo
+                  if [ "$HTTP_CODE" != "200" ]; then
+                    echo "[vat-sync] non-200, exiting 1 so the Job marks failed"
+                    exit 1
+                  fi
+                  COUNT=$(grep -oE '"countries":[0-9]+' /tmp/resp.json | head -1 | cut -d: -f2)
+                  if [ -z "${COUNT:-}" ] || [ "$COUNT" -lt 1 ]; then
+                    echo "[vat-sync] suspiciously few rows ($COUNT)"
+                    exit 2
+                  fi
+                  echo "[vat-sync] success: $COUNT countries synced"
+              resources:
+                requests: { cpu: 10m, memory: 16Mi }
+                limits:   { memory: 64Mi }

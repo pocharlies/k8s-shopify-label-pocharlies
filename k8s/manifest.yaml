@@ -155,7 +155,7 @@ spec:
       serviceAccountName: labels-shopify-app
       containers:
         - name: shopify-app
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:83c3dbe68cef6678221c92e16ab14aa36e80c5240773923a8533d1037531e1ec  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:fa501e3d24017fa6e6275fdbad896796c9549e60ce799fc96ff60fce8b0bd2db  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -174,18 +174,28 @@ spec:
             - { name: CORREOS_ADAPTER_URL, value: "http://labels-correos-adapter.skirmshop.svc.cluster.local:3011" }
             - { name: LABEL_STORAGE_URL, value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007" }
             - { name: CORREOS_ENABLED, value: "false" }
+            # Per-destination VAT applied to checkout rates so the customer
+            # pays the all-in price under taxesIncluded:true + taxShipping:
+            # true. ConfigMap is refreshed weekly by labels-vat-sync from
+            # Shopify Admin REST /countries.json.
+            - { name: VAT_RATES_FILE, value: "/etc/vat/vat-rates.json" }
             - name: EASY_PRINT_PACKING_SLIP_URL_TEMPLATE
               valueFrom:
                 configMapKeyRef:
                   name: labels-shopify-app-config
                   key: EASY_PRINT_PACKING_SLIP_URL_TEMPLATE
           envFrom: [{ secretRef: { name: labels-secrets } }]
+          volumeMounts:
+            - { name: vat-rates, mountPath: /etc/vat/vat-rates.json, subPath: vat-rates.json, readOnly: true }
           resources:
             requests: { cpu: 50m, memory: 64Mi }
             limits:   { memory: 512Mi }
           readinessProbe:
             httpGet: { path: /health, port: 3000 }
             initialDelaySeconds: 15
+      volumes:
+        - name: vat-rates
+          configMap: { name: labels-vat-rates }
 ---
 ---
 apiVersion: v1
@@ -221,6 +231,7 @@ rules:
     resourceNames:
       - labels-cex-rate-table
       - labels-cex-surcharges
+      - labels-vat-rates
     verbs: ["get", "patch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1

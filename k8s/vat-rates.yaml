@@ -1,0 +1,67 @@
+# IVA aplicable al envío en checkout, indexado por código de país ISO 3166-1.
+# Skirmshop es vendedor B2C español acogido al régimen OSS: cobramos IVA del
+# país de destino al cliente final EU. Para destinos extra-EU el tipo es 0
+# (DDU: el cliente paga aduana y VAT local al recibir el paquete).
+#
+# Fuente: tipos vigentes 2026-05 (https://taxation-customs.ec.europa.eu).
+# Refrescado semanalmente por el CronJob labels-vat-sync, que reemplaza este
+# fichero leyendo Shopify Admin REST /countries.json (los Markets del shop
+# son la única fuente que mantiene el merchant).
+#
+# Para destinos no listados se aplica `default_country_rate` (= ES 21 %).
+# Canarias / Ceuta / Melilla NO llevan IVA peninsular sino IGIC/IPSI: hoy se
+# trata como ES 21 % (over-charge) hasta que añadamos lógica por province_code.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: labels-vat-rates
+  namespace: skirmshop
+  annotations:
+    skirmshop.labels/synced-at: "2026-05-29T00:00:00Z"
+    skirmshop.labels/source: seed (taxation-customs.ec.europa.eu 2026-05)
+data:
+  vat-rates.json: |
+    {
+      "synced_at": "2026-05-29T00:00:00Z",
+      "source": "seed (taxation-customs.ec.europa.eu 2026-05)",
+      "default_country_rate": 0.21,
+      "rates": {
+        "ES": 0.21,
+        "PT": 0.23,
+        "FR": 0.20,
+        "IT": 0.22,
+        "DE": 0.19,
+        "AT": 0.20,
+        "BE": 0.21,
+        "BG": 0.20,
+        "HR": 0.25,
+        "CY": 0.19,
+        "CZ": 0.21,
+        "DK": 0.25,
+        "EE": 0.22,
+        "FI": 0.255,
+        "GR": 0.24,
+        "HU": 0.27,
+        "IE": 0.23,
+        "LV": 0.21,
+        "LT": 0.21,
+        "LU": 0.17,
+        "MT": 0.18,
+        "NL": 0.21,
+        "PL": 0.23,
+        "RO": 0.19,
+        "SK": 0.23,
+        "SI": 0.22,
+        "SE": 0.25,
+        "GB": 0.20,
+        "CH": 0.081,
+        "NO": 0.25,
+        "IS": 0.24,
+        "US": 0.00,
+        "CA": 0.00,
+        "JP": 0.00,
+        "CN": 0.00,
+        "AD": 0.045,
+        "GI": 0.00
+      }
+    }
