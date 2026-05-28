@@ -96,14 +96,18 @@ spec:
             # Tarifa contractual y recargos viven en ConfigMaps editables desde el admin.
             # El adapter re-lee ambos ficheros en cada /rate, así que un patch del
             # ConfigMap se ve en <60s sin reinicio del pod (kubelet auto-remonta).
-            - { name: CEX_RATE_TABLE_FILE, value: "/etc/cex/rate-table.json" }
-            - { name: CEX_SURCHARGES_FILE, value: "/etc/cex/surcharges.json" }
+            - { name: CEX_RATE_TABLE_FILE, value: "/etc/cex/rate-table/rate-table.json" }
+            - { name: CEX_SURCHARGES_FILE, value: "/etc/cex/surcharges/surcharges.json" }
           envFrom:
             - { secretRef: { name: labels-secrets } }
             - { secretRef: { name: labels-cex-secrets } }
           volumeMounts:
-            - { name: cex-rate-table, mountPath: /etc/cex/rate-table.json, subPath: rate-table.json, readOnly: true }
-            - { name: cex-surcharges, mountPath: /etc/cex/surcharges.json, subPath: surcharges.json, readOnly: true }
+            # Directory mounts (NOT subPath: ...) so kubelet auto-refreshes
+            # the files when the ConfigMap is patched. ConfigMaps project
+            # rate-table.json + surcharges.json into /etc/cex/ and the
+            # adapter's /rate handler re-reads them every request.
+            - { name: cex-rate-table, mountPath: /etc/cex/rate-table, readOnly: true }
+            - { name: cex-surcharges, mountPath: /etc/cex/surcharges, readOnly: true }
           resources:
             requests: { cpu: 30m, memory: 96Mi }
             limits: { memory: 384Mi }

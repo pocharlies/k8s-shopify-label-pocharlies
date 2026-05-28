@@ -186,7 +186,10 @@ spec:
                   key: EASY_PRINT_PACKING_SLIP_URL_TEMPLATE
           envFrom: [{ secretRef: { name: labels-secrets } }]
           volumeMounts:
-            - { name: vat-rates, mountPath: /etc/vat/vat-rates.json, subPath: vat-rates.json, readOnly: true }
+            # WHOLE directory mount — subPath blocks kubelet auto-refresh.
+            # The ConfigMap projects vat-rates.json into /etc/vat/ and the
+            # per-request loader in rates.ts re-reads it from there.
+            - { name: vat-rates, mountPath: /etc/vat, readOnly: true }
           resources:
             requests: { cpu: 50m, memory: 64Mi }
             limits:   { memory: 512Mi }
