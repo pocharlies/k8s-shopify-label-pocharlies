@@ -94,6 +94,8 @@ data:
               type: object
             quotedTotal:
               type: object
+            insurancePremium:
+              type: object
 
     do:
       # -- 1. Resolve routing ----------------------------------------------
@@ -439,6 +441,7 @@ data:
                     serviceName: '${ .shippingMethodTitle }'
                     labelCost: '${ .quotedTotal }'
                     insuredValue: '${ .insuredValue }'
+                    insurancePremium: '${ .insurancePremium // .carrierConfirmed.data.insurancePremium // null }'
                     trackingNumber: '${ .carrierConfirmed.data.trackingNumber }'
                     trackingUrl: '${ .carrierConfirmed.data.trackingUrl }'
                     labelBytesRef: '${ .labelStored.labelBytesRef }'

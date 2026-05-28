@@ -228,7 +228,7 @@ spec:
             - { key: role, operator: Equal, value: edge, effect: NoSchedule }
           containers:
             - name: tracking-poll-scheduler
-              image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:a783974809859a656582e7bf3b7a9777b57ca6f9b0b2278886594816351371e3
+              image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:d6acce89a1712cd4349de7b270d6b13c12d0be45921ab27e3b65d2bc9d5c2853
               command: ["node", "/app/scripts/poll-tracking-scheduler.mjs"]
               env:
                 - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
