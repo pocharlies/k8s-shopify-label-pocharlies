@@ -93,15 +93,28 @@ spec:
             - { name: LABEL_STORAGE_URL, value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007" }
             # CEX integración confirmed canalEntrada=1 for Skirmshop pararEntrega on 2026-05-26.
             - { name: CEX_PARAR_CANAL_ENTRADA, value: "1" }
+            # Tarifa contractual y recargos viven en ConfigMaps editables desde el admin.
+            # El adapter re-lee ambos ficheros en cada /rate, así que un patch del
+            # ConfigMap se ve en <60s sin reinicio del pod (kubelet auto-remonta).
+            - { name: CEX_RATE_TABLE_FILE, value: "/etc/cex/rate-table.json" }
+            - { name: CEX_SURCHARGES_FILE, value: "/etc/cex/surcharges.json" }
           envFrom:
             - { secretRef: { name: labels-secrets } }
             - { secretRef: { name: labels-cex-secrets } }
+          volumeMounts:
+            - { name: cex-rate-table, mountPath: /etc/cex/rate-table.json, subPath: rate-table.json, readOnly: true }
+            - { name: cex-surcharges, mountPath: /etc/cex/surcharges.json, subPath: surcharges.json, readOnly: true }
           resources:
             requests: { cpu: 30m, memory: 96Mi }
             limits: { memory: 384Mi }
           readinessProbe:
             httpGet: { path: /health, port: 3000 }
             initialDelaySeconds: 10
+      volumes:
+        - name: cex-rate-table
+          configMap: { name: labels-cex-rate-table }
+        - name: cex-surcharges
+          configMap: { name: labels-cex-surcharges }
 ---
 apiVersion: v1
 kind: Service
