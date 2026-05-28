@@ -85,7 +85,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: correos-express-adapter
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:b1dc7a6e8bc844ad79274f7a15ee6ac0d55ba86be902d801b48578227b897b18
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:4d0ef886f6d2444667afbfbeef4285c23b012270dd47779f1ff96f081d253959
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -190,7 +190,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: notification-dispatcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:c18a3a88c3c1ddd5ec10a61cfb1047a281074cfa8a00839cd72f5ddb4e6afa88
+          image: harbor.e-dani.com/homelab/skirmshop-labels-notification-dispatcher@sha256:22c1b844888d276f98c41d05e742f310c458288471fc1b8a17d59e786b872387
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
