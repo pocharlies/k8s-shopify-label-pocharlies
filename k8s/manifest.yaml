@@ -392,7 +392,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: saga-launcher
-          image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:3b909e9a640c4e2d548f1350f005f605a7fbebfcbe5497e2ef72cc8bf7e34d07  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:631c94d10aa389271efd82012cefdbd369ff9349529075251fcd2c53f14561fd  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
