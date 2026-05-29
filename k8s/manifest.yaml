@@ -155,7 +155,7 @@ spec:
       serviceAccountName: labels-shopify-app
       containers:
         - name: shopify-app
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:ec28341daa6e49a12c72cc536046b0cbdd7b7fe6aaacacd2f75a1bb6526374f3  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:f8a33fbb2c5014a33e81f204b9eb40f0ea39f902b629351a259abfc52eacfd76  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
