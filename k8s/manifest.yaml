@@ -140,6 +140,9 @@ metadata:
   namespace: skirmshop
 spec:
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: { maxUnavailable: 0, maxSurge: 1 }
   selector: { matchLabels: { app: labels-shopify-app } }
   template:
     metadata: { labels: { app: labels-shopify-app } }
@@ -155,6 +158,9 @@ spec:
       serviceAccountName: labels-shopify-app
       containers:
         - name: shopify-app
+          lifecycle:
+            preStop:
+              exec: { command: ["/bin/sh", "-c", "sleep 10"] }
           image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:67f4b7ace61548cfeecf2132a7e6f33b7f2568aeffeab4e1c9fb91f693907dbf  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
@@ -340,6 +346,9 @@ metadata:
   namespace: skirmshop
 spec:
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: { maxUnavailable: 0, maxSurge: 1 }
   selector: { matchLabels: { app: labels-routing-service } }
   template:
     metadata: { labels: { app: labels-routing-service } }
@@ -350,6 +359,9 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: routing-service
+          lifecycle:
+            preStop:
+              exec: { command: ["/bin/sh", "-c", "sleep 10"] }
           image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:712061ff19434aebf65be6a87869f69381f60ccba4f7bcb170844694e3d7559b  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
@@ -475,6 +487,9 @@ metadata:
   namespace: skirmshop
 spec:
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: { maxUnavailable: 0, maxSurge: 1 }
   selector: { matchLabels: { app: labels-ups-adapter } }
   template:
     metadata: { labels: { app: labels-ups-adapter } }
@@ -485,6 +500,9 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: ups-adapter
+          lifecycle:
+            preStop:
+              exec: { command: ["/bin/sh", "-c", "sleep 10"] }
           image: harbor.e-dani.com/homelab/skirmshop-labels-ups-adapter@sha256:c5c55571ec9fca03714923570ad358a6e2ca300c290c82b0fbdab2baa8341f62  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
