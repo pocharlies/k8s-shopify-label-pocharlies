@@ -155,7 +155,7 @@ spec:
       serviceAccountName: labels-shopify-app
       containers:
         - name: shopify-app
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:1086faa2325f592458cd51996e1092785c7f107d5951750f36bb3dfecba04b13  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-app@sha256:cc6f3b368dd8f0512df3d8e6ef90725ef14b08de17d4367f4efb60c5b6d861fd  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -350,7 +350,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: routing-service
-          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:74c2124cd47317ead92016e1e035b4cf07a581f5915f6a0dcf2088d1f49190ef  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
+          image: harbor.e-dani.com/homelab/skirmshop-labels-routing-service@sha256:044ff12ccbcd378992b45867a95f6ccdf8987a1945b7ed0fddb3aaddb107c013  # pin por digest (no :latest, policy Kyverno disallow-latest-tag)
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
