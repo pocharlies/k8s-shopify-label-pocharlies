@@ -155,7 +155,7 @@ spec:
           env:
             - { name: PORT, value: "3000" }
             - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
-            - { name: NATS_URL, value: "nats://labels-nats.skirmshop.svc.cluster.local:4222" }
+            - { name: NATS_URL, value: "nats://labels-nats-cluster.skirmshop.svc.cluster.local:4222" }
             - { name: LABEL_STORAGE_URL, value: "http://labels-label-storage.skirmshop.svc.cluster.local:3007" }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
@@ -268,7 +268,7 @@ spec:
           env:
             - { name: PORT, value: "3000" }
             - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
-            - { name: NATS_URL, value: "nats://labels-nats.skirmshop.svc.cluster.local:4222" }
+            - { name: NATS_URL, value: "nats://labels-nats-cluster.skirmshop.svc.cluster.local:4222" }
             - { name: NATS_STREAM, value: "SHIPPING_EVENTS" }
             - { name: NATS_DURABLE, value: "event-projector" }
             - { name: NATS_FILTER_SUBJECT, value: "shipping.events.>" }
@@ -312,7 +312,7 @@ spec:
           env:
             - { name: PORT, value: "3000" }
             - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
-            - { name: NATS_URL, value: "nats://labels-nats.skirmshop.svc.cluster.local:4222" }
+            - { name: NATS_URL, value: "nats://labels-nats-cluster.skirmshop.svc.cluster.local:4222" }
             - { name: NATS_STREAM, value: "SHIPPING_EVENTS" }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
