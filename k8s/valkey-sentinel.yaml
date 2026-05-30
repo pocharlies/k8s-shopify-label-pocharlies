@@ -34,7 +34,11 @@ data:
       sleep 2
     done
     COMMON="--port 6379 --dir /data --appendonly yes --save '' --replica-announce-ip ${MYFQDN}"
-    if [ -n "$MASTER_IP" ]; then
+    # If sentinel reports a master that is NOT me → replica of it (handles rejoin
+    # after failover). If it reports me (pod-0's static bootstrap target) or
+    # nothing → pod-0 becomes master, others replicaof pod-0. This avoids pod-0
+    # doing `replicaof` of ITSELF (which left every node a slave / no master).
+    if [ -n "$MASTER_IP" ] && [ "$MASTER_IP" != "$MYFQDN" ]; then
       exec valkey-server $COMMON --replicaof "$MASTER_IP" 6379
     elif [ "$POD_NAME" = "labels-valkey-0" ]; then
       exec valkey-server $COMMON
