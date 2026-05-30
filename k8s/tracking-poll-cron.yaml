@@ -228,8 +228,12 @@ spec:
             - { key: role, operator: Equal, value: edge, effect: NoSchedule }
           containers:
             - name: tracking-poll-scheduler
-              image: harbor.e-dani.com/homelab/skirmshop-labels-saga-launcher@sha256:d6acce89a1712cd4349de7b270d6b13c12d0be45921ab27e3b65d2bc9d5c2853
-              command: ["node", "/app/scripts/poll-tracking-scheduler.mjs"]
+              # Promoted to a first-class app (was the saga-launcher image running an
+              # inline ConfigMap .mjs). Adds dedup + max-attempts + min-interval + max-age
+              # guards that stop the unbounded "new poll instance every 15 min" growth.
+              # Keeps poll-tracking v1.2.0 (the registered version); v1.3.0 registration
+              # is a separate, deferred step.
+              image: harbor.e-dani.com/homelab/skirmshop-labels-tracking-poll-scheduler@sha256:4b4029eee1d542a4d9fe06bdfbbd74c8ea7085e2e4d6da97c55c6ae29dd9d922
               env:
                 - { name: PG_URL, value: "postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels" }
                 - { name: SYNAPSE_API_URL, value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080" }
@@ -238,13 +242,11 @@ spec:
                 - { name: POLL_TRACKING_WORKFLOW_VERSION, value: "1.2.0" }
                 - { name: POLL_TRACKING_BATCH_SIZE, value: "100" }
                 - { name: REQUEST_TIMEOUT_MS, value: "15000" }
+                # --- dedup / back-pressure guards (the fix) ---
+                - { name: POLL_MIN_INTERVAL_MINUTES, value: "90" }
+                - { name: POLL_MAX_ATTEMPTS, value: "32" }
+                - { name: POLL_MAX_AGE_DAYS, value: "21" }
               envFrom: [{ secretRef: { name: labels-secrets } }]
-              volumeMounts:
-                - { name: scheduler-script, mountPath: /app/scripts, readOnly: true }
               resources:
                 requests: { cpu: 20m, memory: 64Mi }
                 limits: { memory: 256Mi }
-          volumes:
-            - name: scheduler-script
-              configMap:
-                name: labels-tracking-poll-scheduler
