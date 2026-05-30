@@ -46,7 +46,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: shopify-fulfillment-service
-          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-fulfillment-service:20260522-synapse
+          image: harbor.e-dani.com/homelab/skirmshop-labels-shopify-fulfillment-service@sha256:b52b430cba7ed541335625ee51817308908a794341e4f9d1e468b506d3bd2529
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
