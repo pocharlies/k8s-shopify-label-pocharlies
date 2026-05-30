@@ -1,0 +1,102 @@
+# synapse-janitor — observe-only (read-only) Redis janitor for Synapse.
+# Ships CLEANUP_ENABLED=false + CLEANUP_DRY_RUN=true: scans the workflow-instance
+# backlog, exposes metrics + logs the would-delete census, archives/deletes
+# NOTHING. Connects to the current single labels-redis (REDIS_URL). Flip the two
+# env vars later to enable live cleanup. See app repo docs/RUNBOOK-synapse-cleanup.md.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: labels-synapse-janitor
+  namespace: skirmshop
+  labels:
+    app: labels-synapse-janitor
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: labels-synapse-janitor
+  strategy:
+    type: Recreate # single-writer; never two janitors at once
+  template:
+    metadata:
+      labels:
+        app: labels-synapse-janitor
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
+    spec:
+      enableServiceLinks: false
+      nodeSelector:
+        kubernetes.io/arch: amd64
+        role: edge
+      tolerations:
+        - effect: NoSchedule
+          key: role
+          operator: Equal
+          value: edge
+      containers:
+        - name: synapse-janitor
+          image: harbor.e-dani.com/homelab/skirmshop-labels-synapse-janitor@sha256:7b14735b577812fd32473c3e9ad5c7df5046a6705a39f3e517eb4865f819a18d
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - secretRef:
+                name: labels-secrets # DB_USER / DB_PASSWORD
+          env:
+            - name: PORT
+              value: "3000"
+            - name: PG_URL
+              value: postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels
+            - name: REDIS_URL
+              value: redis://labels-redis.skirmshop.svc.cluster.local:6379
+            - name: SYNAPSE_INDEX_KEY
+              value: workflow-instances.synapse.io
+            # --- OBSERVE-ONLY: no writes/deletes ---
+            - name: CLEANUP_ENABLED
+              value: "false"
+            - name: CLEANUP_DRY_RUN
+              value: "true"
+            - name: CLEANUP_MIN_AGE_HOURS
+              value: "6"
+            - name: CLEANUP_RETENTION_COMPLETED_HOURS
+              value: "24"
+            - name: CLEANUP_RETENTION_FAULTED_HOURS
+              value: "48"
+            - name: CLEANUP_RETENTION_PENDING_POLL_HOURS
+              value: "24"
+            - name: CLEANUP_INTERVAL_SECONDS
+              value: "900"
+            - name: ORPHAN_GRACE_SECONDS
+              value: "120"
+            - name: MANUAL_LABEL_STUCK_MINUTES
+              value: "15"
+          ports:
+            - containerPort: 3000
+              name: http
+          readinessProbe:
+            httpGet: { path: /ready, port: 3000 }
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          livenessProbe:
+            httpGet: { path: /health, port: 3000 }
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          resources:
+            requests: { cpu: 20m, memory: 64Mi }
+            limits: { memory: 192Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: labels-synapse-janitor
+  namespace: skirmshop
+  labels:
+    app: labels-synapse-janitor
+spec:
+  selector:
+    app: labels-synapse-janitor
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
