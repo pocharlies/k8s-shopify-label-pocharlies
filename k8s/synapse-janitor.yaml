@@ -50,6 +50,10 @@ spec:
               value: postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels
             - name: REDIS_URL
               value: redis://labels-redis.skirmshop.svc.cluster.local:6379
+            - name: REDIS_SENTINELS
+              value: labels-valkey-sentinel.skirmshop.svc.cluster.local:26379
+            - name: REDIS_MASTER_NAME
+              value: labels-master
             - name: SYNAPSE_INDEX_KEY
               value: workflow-instances.synapse.io
             # --- STEADY-STATE LIVE cleanup (conservative retention) ---
