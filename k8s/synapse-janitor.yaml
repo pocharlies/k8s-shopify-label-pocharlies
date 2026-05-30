@@ -52,11 +52,13 @@ spec:
               value: redis://labels-redis.skirmshop.svc.cluster.local:6379
             - name: SYNAPSE_INDEX_KEY
               value: workflow-instances.synapse.io
-            # --- OBSERVE-ONLY: no writes/deletes ---
+            # --- STEADY-STATE LIVE cleanup (conservative retention) ---
+            # Drains terminal instances older than retention; protects <6h + gsl.
+            # Proven safe by the one-time remediation (3663→980, 0 archiveFailed).
             - name: CLEANUP_ENABLED
-              value: "false"
-            - name: CLEANUP_DRY_RUN
               value: "true"
+            - name: CLEANUP_DRY_RUN
+              value: "false"
             - name: CLEANUP_MIN_AGE_HOURS
               value: "6"
             - name: CLEANUP_RETENTION_COMPLETED_HOURS
