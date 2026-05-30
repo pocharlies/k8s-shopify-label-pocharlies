@@ -66,7 +66,7 @@ spec:
             - { key: role, operator: Equal, value: edge, effect: NoSchedule }
           containers:
             - name: reaper
-              image: rancher/kubectl:v1.32.5
+              image: alpine/k8s:1.32.5 # alpine base → has /bin/sh + kubectl
               command: ["/bin/sh", "-c"]
               args:
                 - |
