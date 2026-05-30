@@ -1,0 +1,158 @@
+# =============================================================================
+# Valkey + Sentinel HA for Synapse state (replaces the bitnami plan — bitnami
+# images are dead on Docker Hub). Valkey (valkey/valkey:8-alpine) is the
+# maintained BSD Redis fork, wire-compatible with StackExchange.Redis (Synapse)
+# and ioredis (janitor/ups). 3 pods, each running valkey + a sentinel sidecar:
+# 1 master + 2 replicas + 3 sentinels (quorum 2). Single logical master keeps
+# the janitor's WATCH/MULTI + hash index intact (NO sharding/cluster).
+#
+# Deploy under a NEW name (labels-valkey*) parallel to the old labels-redis, so
+# nothing is replaced in place (ArgoCD prune=false safe). Cutover = flip the
+# Synapse/janitor/ups connection strings (env), reversible.
+#
+# VALIDATE in a throwaway namespace (kill master → sentinel failover) before the
+# production window.
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: labels-valkey-scripts
+  namespace: skirmshop
+data:
+  start-valkey.sh: |
+    #!/bin/sh
+    set -eu
+    HEADLESS="labels-valkey-headless.${POD_NAMESPACE}.svc.cluster.local"
+    SENTINEL_SVC="labels-valkey-sentinel.${POD_NAMESPACE}.svc.cluster.local"
+    MYFQDN="${POD_NAME}.${HEADLESS}"
+    # Ask any sentinel for the current master; bootstrap pod-0 if none known yet.
+    MASTER_IP=""
+    if command -v valkey-cli >/dev/null 2>&1; then CLI=valkey-cli; else CLI=redis-cli; fi
+    for i in $(seq 1 10); do
+      MASTER_IP=$($CLI -h "$SENTINEL_SVC" -p 26379 sentinel get-master-addr-by-name labels-master 2>/dev/null | head -1 || true)
+      [ -n "$MASTER_IP" ] && break
+      sleep 2
+    done
+    COMMON="--port 6379 --dir /data --appendonly yes --save '' --replica-announce-ip ${MYFQDN}"
+    if [ -n "$MASTER_IP" ]; then
+      exec valkey-server $COMMON --replicaof "$MASTER_IP" 6379
+    elif [ "$POD_NAME" = "labels-valkey-0" ]; then
+      exec valkey-server $COMMON
+    else
+      exec valkey-server $COMMON --replicaof "labels-valkey-0.${HEADLESS}" 6379
+    fi
+  start-sentinel.sh: |
+    #!/bin/sh
+    set -eu
+    HEADLESS="labels-valkey-headless.${POD_NAMESPACE}.svc.cluster.local"
+    CONF=/data/sentinel.conf
+    # Monitor pod-0 initially; sentinel rewrites this file as topology changes.
+    cat > "$CONF" <<EOF
+    port 26379
+    dir /data
+    sentinel resolve-hostnames yes
+    sentinel announce-hostnames yes
+    sentinel monitor labels-master labels-valkey-0.${HEADLESS} 6379 2
+    sentinel down-after-milliseconds labels-master 5000
+    sentinel failover-timeout labels-master 10000
+    sentinel parallel-syncs labels-master 1
+    EOF
+    exec valkey-sentinel "$CONF"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: labels-valkey-headless
+  namespace: skirmshop
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    app: labels-valkey
+  ports:
+    - { name: valkey, port: 6379 }
+    - { name: sentinel, port: 26379 }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: labels-valkey-sentinel
+  namespace: skirmshop
+spec:
+  selector:
+    app: labels-valkey
+  ports:
+    - { name: sentinel, port: 26379, targetPort: 26379 }
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: labels-valkey
+  namespace: skirmshop
+spec:
+  serviceName: labels-valkey-headless
+  replicas: 3
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      app: labels-valkey
+  template:
+    metadata:
+      labels:
+        app: labels-valkey
+    spec:
+      enableServiceLinks: false
+      # ks5-cp-1/2/3 are the only multi-node Longhorn-capable nodes (workload=core,
+      # untainted, region ovh-rbx ~10ms from sauvage). sauvage (edge) has NO longhorn
+      # CSI → cannot host PVC StatefulSets. So HA stateful services live on ks5.
+      nodeSelector: { workload: core }
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector: { matchLabels: { app: labels-valkey } }
+                topologyKey: kubernetes.io/hostname
+      containers:
+        - name: valkey
+          image: valkey/valkey:8-alpine
+          command: ["/bin/sh", "/scripts/start-valkey.sh"]
+          env:
+            - { name: POD_NAME, valueFrom: { fieldRef: { fieldPath: metadata.name } } }
+            - { name: POD_NAMESPACE, valueFrom: { fieldRef: { fieldPath: metadata.namespace } } }
+          ports: [{ containerPort: 6379, name: valkey }]
+          volumeMounts:
+            - { name: data, mountPath: /data }
+            - { name: scripts, mountPath: /scripts }
+          livenessProbe:
+            exec: { command: ["sh", "-c", "valkey-cli -p 6379 ping | grep -q PONG"] }
+            initialDelaySeconds: 20
+            periodSeconds: 15
+          resources:
+            requests: { cpu: 50m, memory: 128Mi }
+            limits: { memory: 512Mi }
+        - name: sentinel
+          image: valkey/valkey:8-alpine
+          command: ["/bin/sh", "/scripts/start-sentinel.sh"]
+          env:
+            - { name: POD_NAME, valueFrom: { fieldRef: { fieldPath: metadata.name } } }
+            - { name: POD_NAMESPACE, valueFrom: { fieldRef: { fieldPath: metadata.namespace } } }
+          ports: [{ containerPort: 26379, name: sentinel }]
+          volumeMounts:
+            - { name: data, mountPath: /data }
+            - { name: scripts, mountPath: /scripts }
+          resources:
+            requests: { cpu: 20m, memory: 32Mi }
+            limits: { memory: 96Mi }
+      volumes:
+        - name: scripts
+          configMap: { name: labels-valkey-scripts, defaultMode: 0755 }
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: longhorn
+        resources:
+          requests:
+            storage: 8Gi
