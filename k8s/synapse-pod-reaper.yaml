@@ -1,0 +1,85 @@
+# =============================================================================
+# synapse-pod-reaper — reaps terminal Synapse runner pods (operator alpha1 leak)
+# =============================================================================
+# Synapse (SYNAPSE_RUNTIME_MODE=kubernetes) spawns one runner pod per workflow
+# instance and does NOT garbage-collect them when they finish — they piled up to
+# 4200+ Completed pods and helped crash-loop the operator. These pods are bare
+# (no labels/owner), named "<instanceName>.skirmshop-<hash>"; normal Job pods
+# (sii-invoicing-…, *-sync-…) do NOT contain the ".skirmshop-" infix, so we match
+# on that. Reaps Succeeded/Failed runner pods every 10 min. Idempotent + safe.
+# =============================================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: synapse-pod-reaper
+  namespace: skirmshop
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: synapse-pod-reaper
+  namespace: skirmshop
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: synapse-pod-reaper
+  namespace: skirmshop
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: synapse-pod-reaper
+subjects:
+  - kind: ServiceAccount
+    name: synapse-pod-reaper
+    namespace: skirmshop
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: labels-synapse-pod-reaper
+  namespace: skirmshop
+spec:
+  schedule: "*/10 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 3600
+      backoffLimit: 1
+      activeDeadlineSeconds: 300
+      template:
+        metadata:
+          labels:
+            app: labels-synapse-pod-reaper
+        spec:
+          restartPolicy: Never
+          serviceAccountName: synapse-pod-reaper
+          enableServiceLinks: false
+          nodeSelector: { kubernetes.io/arch: amd64, role: edge }
+          tolerations:
+            - { key: role, operator: Equal, value: edge, effect: NoSchedule }
+          containers:
+            - name: reaper
+              image: rancher/kubectl:v1.32.5
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -u
+                  total=0
+                  for phase in Succeeded Failed; do
+                    names=$(kubectl -n skirmshop get pods --field-selector=status.phase=$phase -o name 2>/dev/null | grep '\.skirmshop-' || true)
+                    [ -z "$names" ] && continue
+                    n=$(printf '%s\n' "$names" | grep -c . || true)
+                    total=$((total + n))
+                    printf '%s\n' "$names" | xargs -r -n 50 kubectl -n skirmshop delete --grace-period=0 --wait=false --ignore-not-found >/dev/null 2>&1 || true
+                  done
+                  echo "{\"msg\":\"synapse-pod-reaper.done\",\"reaped\":$total}"
+              resources:
+                requests: { cpu: 20m, memory: 32Mi }
+                limits: { memory: 96Mi }
