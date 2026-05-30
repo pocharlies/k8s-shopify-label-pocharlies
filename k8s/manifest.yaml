@@ -567,7 +567,7 @@ spec:
           env:
             - { name: SYNAPSE_API_AUTH_TOKEN_FILE, value: /app/tokens.yaml }
             - { name: SYNAPSE_API_JWT_AUTHORITY, value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080" }
-            - { name: CONNECTIONSTRINGS__REDIS, value: "labels-valkey-sentinel.skirmshop.svc.cluster.local:26379,serviceName=labels-master,tieBreaker=" }
+            - { name: CONNECTIONSTRINGS__REDIS, value: "labels-redis.skirmshop.svc.cluster.local:6379" }
             - { name: SYNAPSE_DASHBOARD_SERVE, value: "true" }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           volumeMounts:
@@ -639,7 +639,7 @@ spec:
           env:
             - { name: SYNAPSE_CORRELATOR_NAMESPACE, value: skirmshop }
             - { name: SYNAPSE_CORRELATOR_NAME, value: skirmshop-correlator }
-            - { name: CONNECTIONSTRINGS__REDIS, value: "labels-valkey-sentinel.skirmshop.svc.cluster.local:26379,serviceName=labels-master,tieBreaker=" }
+            - { name: CONNECTIONSTRINGS__REDIS, value: "labels-redis.skirmshop.svc.cluster.local:6379" }
           envFrom: [{ secretRef: { name: labels-secrets } }]
           resources:
             requests: { cpu: 30m, memory: 64Mi }
@@ -703,7 +703,7 @@ spec:
         - name: synapse-operator
           image: ghcr.io/serverlessworkflow/synapse/operator:1.0.0-alpha1
           env:
-            - { name: CONNECTIONSTRINGS__REDIS, value: "labels-valkey-sentinel.skirmshop.svc.cluster.local:26379,serviceName=labels-master,tieBreaker=" }
+            - { name: CONNECTIONSTRINGS__REDIS, value: "labels-redis.skirmshop.svc.cluster.local:6379" }
             - { name: SYNAPSE_OPERATOR_NAME, value: skirmshop-operator }
             - { name: SYNAPSE_OPERATOR_NAMESPACE, value: skirmshop }
             - { name: SYNAPSE_RUNNER_API, value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080" }
