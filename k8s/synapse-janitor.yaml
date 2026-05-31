@@ -49,7 +49,7 @@ spec:
             - name: PG_URL
               value: postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-shared-rw.databases.svc.cluster.local:5432/labels
             - name: REDIS_URL
-              value: redis://labels-redis.skirmshop.svc.cluster.local:6379
+              value: redis://labels-valkey-master.skirmshop.svc.cluster.local:6379
             - name: SYNAPSE_INDEX_KEY
               value: workflow-instances.synapse.io
             # --- STEADY-STATE LIVE cleanup (conservative retention) ---
