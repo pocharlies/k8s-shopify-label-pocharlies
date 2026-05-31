@@ -35,7 +35,7 @@ data:
       dsl: '1.0.0'
       namespace: skirmshop
       name: generate-shipment-label
-      version: '1.2.15'
+      version: '1.2.14'
       summary: |
         Full shipping saga for a paid Shopify order. Routes to UPS, Correos
         Express or Correos matriz, persists the label, updates
@@ -157,8 +157,8 @@ data:
 
       - pickupPointGate:
           switch:
-            - pickupPointPending:
-                when: (.routing.decision.carrier == "ups" or .routing.decision.carrier == "correos_express") and .pickupPointRequired == true and .pickupPointId == null
+            - upsAccessPointPending:
+                when: .routing.decision.carrier == "ups" and .pickupPointRequired == true and .pickupPointId == null
                 then: pickupPointRequired
             - shipmentReady:
                 then: createShipment
@@ -173,8 +173,8 @@ data:
                 data:
                   orderId: '${ .orderId }'
                   shipmentId: '${ .shipmentId }'
-                  carrier: '${ .routing.decision.carrier }'
-                  reason: 'Pickup point selected at checkout; waiting for post-payment point selection before creating label'
+                  carrier: ups
+                  reason: 'UPS Access Point selected at checkout; waiting for post-payment point selection before creating label'
           then: exit
 
       # -- 2. Create shipment on the chosen carrier ------------------------
