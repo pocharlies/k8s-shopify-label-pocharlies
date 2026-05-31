@@ -9,59 +9,7 @@ spec:
   storageClassName: longhorn
 ---
 ---
-# Labels NATS
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: labels-nats
-  namespace: skirmshop
-spec:
-  replicas: 1
-  selector: { matchLabels: { app: labels-nats } }
-  template:
-    metadata: { labels: { app: labels-nats } }
-    spec:
-      enableServiceLinks: false
-      nodeSelector:
-        role: edge
-        kubernetes.io/arch: amd64
-      tolerations:
-        - { key: role, operator: Equal, value: edge, effect: NoSchedule }
-      containers:
-        - name: nats
-          image: nats:2.10-alpine
-          args: ["-js", "-sd", "/data", "-m", "8222"]
-          ports:
-            - { name: client, containerPort: 4222 }
-            - { name: monitor, containerPort: 8222 }
-            - { name: cluster, containerPort: 6222 }
-          volumeMounts:
-            - { name: data, mountPath: /data }
-          resources:
-            requests: { cpu: 20m, memory: 32Mi }
-            limits:   { memory: 256Mi }
-          readinessProbe:
-            httpGet: { path: /healthz, port: 8222 }
-            initialDelaySeconds: 3
-      volumes:
-        - name: data
-          emptyDir: {}   # JetStream persistence; use PVC for production
----
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: labels-nats
-  namespace: skirmshop
-spec:
-  selector: { app: labels-nats }
-  ports:
-    - { name: client, port: 4222, targetPort: 4222 }
-    - { name: monitor, port: 8222, targetPort: 8222 }
-
 # ExternalSecret — labels app secrets
----
----
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
 metadata:

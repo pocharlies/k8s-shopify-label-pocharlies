@@ -1,7 +1,7 @@
 # synapse-janitor — observe-only (read-only) Redis janitor for Synapse.
 # Ships CLEANUP_ENABLED=false + CLEANUP_DRY_RUN=true: scans the workflow-instance
 # backlog, exposes metrics + logs the would-delete census, archives/deletes
-# NOTHING. Connects to the current single labels-redis (REDIS_URL). Flip the two
+# NOTHING. Connects to the HA Valkey master endpoint labels-valkey-master (REDIS_URL). Flip the two
 # env vars later to enable live cleanup. See app repo docs/RUNBOOK-synapse-cleanup.md.
 apiVersion: apps/v1
 kind: Deployment
