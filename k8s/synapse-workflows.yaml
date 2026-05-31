@@ -6,7 +6,7 @@ data:
     # ============================================================================
     # Serverless Workflow DSL v1.0. Executed by the Synapse Runner (RESEARCH.md §1).
     #
-    # Triggered by:  an OrderPaid CloudEvent received on the NATS bus
+    # Triggered by:  a manual admin OrderPaid CloudEvent from Skirmshop Labels
     # Produces:      ShipmentCompleted on success, ShipmentFailed on compensation
     #
     # Saga stages (RESEARCH.md §Commands):
@@ -35,7 +35,7 @@ data:
       dsl: '1.0.0'
       namespace: skirmshop
       name: generate-shipment-label
-      version: '1.2.14'
+      version: '1.2.15'
       summary: |
         Full shipping saga for a paid Shopify order. Routes to UPS, Correos
         Express or Correos matriz, persists the label, updates
@@ -105,7 +105,7 @@ data:
                 call: http
                 with:
                   method: post
-                  endpoint: http://labels-routing-service.skirmshop.svc.cluster.local:3001/resolve
+                  endpoint: http://routing-service:3001/resolve
                   headers:
                     content-type: application/json
                     x-correlation-id: '${ .correlationId }'
@@ -157,8 +157,8 @@ data:
 
       - pickupPointGate:
           switch:
-            - upsAccessPointPending:
-                when: .routing.decision.carrier == "ups" and .pickupPointRequired == true and .pickupPointId == null
+            - pickupPointPending:
+                when: (.routing.decision.carrier == "ups" or .routing.decision.carrier == "correos_express") and .pickupPointRequired == true and .pickupPointId == null
                 then: pickupPointRequired
             - shipmentReady:
                 then: createShipment
@@ -173,8 +173,8 @@ data:
                 data:
                   orderId: '${ .orderId }'
                   shipmentId: '${ .shipmentId }'
-                  carrier: ups
-                  reason: 'UPS Access Point selected at checkout; waiting for post-payment point selection before creating label'
+                  carrier: '${ .routing.decision.carrier }'
+                  reason: 'Pickup point selected at checkout; waiting for post-payment point selection before creating label'
           then: exit
 
       # -- 2. Create shipment on the chosen carrier ------------------------
@@ -198,7 +198,7 @@ data:
                 call: http
                 with:
                   method: post
-                  endpoint: http://labels-ups-adapter.skirmshop.svc.cluster.local:3002/shipments
+                  endpoint: http://ups-adapter:3002/shipments
                   headers:
                     content-type: application/json
                     x-correlation-id: '${ .correlationId }'
@@ -226,7 +226,7 @@ data:
                   call: http
                   with:
                     method: post
-                    endpoint: http://labels-ups-adapter.skirmshop.svc.cluster.local:3002/compensate
+                    endpoint: http://ups-adapter:3002/compensate
                     body:
                       shipmentId: '${ .shipmentId }'
                       correlationId: '${ .correlationId }'
@@ -245,7 +245,7 @@ data:
                 call: http
                 with:
                   method: post
-                  endpoint: http://labels-correos-express-adapter.skirmshop.svc.cluster.local:3003/shipments
+                  endpoint: http://correos-express-adapter:3003/shipments
                   headers:
                     content-type: application/json
                     x-correlation-id: '${ .correlationId }'
@@ -270,7 +270,7 @@ data:
                   call: http
                   with:
                     method: post
-                    endpoint: http://labels-correos-express-adapter.skirmshop.svc.cluster.local:3003/compensate
+                    endpoint: http://correos-express-adapter:3003/compensate
                     body:
                       shipmentId: '${ .shipmentId }'
                       correlationId: '${ .correlationId }'
@@ -289,7 +289,7 @@ data:
                 call: http
                 with:
                   method: post
-                  endpoint: http://labels-correos-adapter.skirmshop.svc.cluster.local:3011/shipments
+                  endpoint: http://correos-adapter:3011/shipments
                   headers:
                     content-type: application/json
                     x-correlation-id: '${ .correlationId }'
@@ -303,7 +303,7 @@ data:
                       destination: '${ .destination }'
                       items: '${ .items }'
                 output:
-                  as: '${ $input + { carrierConfirmed: { data: $output.carrierAccepted } } }'
+                  as: '${ $input }'
           catch:
             errors:
               with:
@@ -388,7 +388,7 @@ data:
                 call: http
                 with:
                   method: post
-                  endpoint: http://labels-label-storage.skirmshop.svc.cluster.local:3007/persist
+                  endpoint: http://label-storage:3007/persist
                   headers:
                     content-type: application/json
                     x-correlation-id: '${ .correlationId }'
@@ -428,7 +428,7 @@ data:
                 call: http
                 with:
                   method: post
-                  endpoint: http://labels-notification-dispatcher.skirmshop.svc.cluster.local:3007/ops/label-created
+                  endpoint: http://notification-dispatcher:3007/ops/label-created
                   headers:
                     content-type: application/json
                     x-correlation-id: '${ .correlationId }'
@@ -473,7 +473,7 @@ data:
                 call: http
                 with:
                   method: post
-                  endpoint: http://labels-shopify-fulfillment-service.skirmshop.svc.cluster.local:3005/fulfillments
+                  endpoint: http://shopify-fulfillment-service:3005/fulfillments
                   headers:
                     content-type: application/json
                     x-correlation-id: '${ .correlationId }'

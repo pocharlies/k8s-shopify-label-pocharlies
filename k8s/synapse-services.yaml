@@ -349,7 +349,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: synapse-workflow-registrar
-          image: harbor.e-dani.com/homelab/skirmshop-labels-synapse-workflow-registrar:20260522-synapse
+          image: harbor.e-dani.com/homelab/skirmshop-labels-synapse-workflow-registrar@sha256:6f07872edcce1dd7536d3775619042fa72320e6e4cc818d4daa556552bff9852
           env:
             - { name: SYNAPSE_API_URL, value: "http://labels-synapse-api.skirmshop.svc.cluster.local:8080" }
             - { name: WORKFLOWS_DIR, value: "/workflows" }
