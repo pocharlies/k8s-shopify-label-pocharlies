@@ -90,7 +90,7 @@ spec:
           lifecycle:
             preStop:
               exec: { command: ["/bin/sh", "-c", "sleep 10"] }
-          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:a78649025b7438c48a2a4c2955fcf114ab3c0ecba83301fae023974a0ac19d0d
+          image: harbor.e-dani.com/homelab/skirmshop-labels-correos-express-adapter@sha256:bb92c8151399f2298c1d996fecca725bba8a4e845a2f8dab031dee5ea2686b6c
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
@@ -263,7 +263,7 @@ spec:
         - { key: role, operator: Equal, value: edge, effect: NoSchedule }
       containers:
         - name: event-projector
-          image: harbor.e-dani.com/homelab/skirmshop-labels-event-projector:20260522-synapse
+          image: harbor.e-dani.com/homelab/skirmshop-labels-event-projector@sha256:90bdc635d7fa98ed84181a09ec731daf60eaadc786f5298550492bad7d750daa
           ports: [{ name: http, containerPort: 3000 }]
           env:
             - { name: PORT, value: "3000" }
