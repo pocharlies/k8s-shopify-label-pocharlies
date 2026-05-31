@@ -15,7 +15,7 @@ metadata:
   name: labels-redis
   namespace: skirmshop
 spec:
-  replicas: 1
+  replicas: 0  # RETIRED: labels-redis ya no se usa (Synapse->Valkey, firecrawl->firecrawl-valkey). Kept at 0 for quick rollback.
   strategy: { type: Recreate }
   selector: { matchLabels: { app: labels-redis } }
   template:
